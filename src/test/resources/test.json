@@ -1,0 +1,71 @@
+{
+  "nodeName": "RootNodeTest1",
+  "nodeType": "Sequence",
+  "children": [
+    {
+      "nodeName": "Action1",
+      "nodeType": "Action",
+      "beanName": "ActionNodeImpl0",
+      "container": "spring"
+    },
+    {
+      "nodeName": "Random1",
+      "nodeType": "Random",
+      "children": [
+        {
+          "nodeName": "RandomAction1",
+          "nodeType": "Action",
+          "beanName": "com.lee9213.behavior.node.impl.SuccessActionNodeImpl"
+        },
+        {
+          "nodeName": "RandomAction2",
+          "nodeType": "Action",
+          "beanName": "com.lee9213.behavior.node.impl.SuccessActionNodeImpl"
+        },
+        {
+          "nodeName": "RandomAction3",
+          "nodeType": "Action",
+          "beanName": "com.lee9213.behavior.node.impl.SuccessActionNodeImpl"
+        }
+      ]
+    },
+    {
+      "nodeName": "Selector1",
+      "nodeType": "Selector",
+      "children": [
+        {
+          "nodeName": "SelectorAction1",
+          "nodeType": "Action",
+          "beanName": "com.lee9213.behavior.node.impl.FailureActionNodeImpl"
+        },
+        {
+          "nodeName": "SelectorAction2",
+          "nodeType": "Action",
+          "beanName": "com.lee9213.behavior.node.impl.SuccessActionNodeImpl"
+        }
+      ]
+    },
+    {
+      "nodeName": "Strategy1",
+      "nodeType": "Strategy",
+      "condition": {
+        "nodeName": "conditionNode1",
+        "nodeType": "Action",
+        "beanName": "ActionNodeImpl1",
+        "container": "spring"
+      },
+      "strategyMap": {
+        "A": {
+          "nodeName": "StrategyAction1",
+          "nodeType": "Action",
+          "beanName": "com.lee9213.behavior.node.impl.SuccessActionNodeImpl"
+        },
+        "B": {
+          "nodeName": "StrategyAction2",
+          "nodeType": "Action",
+          "beanName": "com.lee9213.behavior.node.impl.FailureActionNodeImpl"
+        }
+      }
+    }
+  ]
+}

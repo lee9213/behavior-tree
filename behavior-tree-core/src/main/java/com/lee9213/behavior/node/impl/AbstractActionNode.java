@@ -1,4 +1,4 @@
-package com.lee9213.behavior.action;
+package com.lee9213.behavior.node.impl;
 
 import com.lee9213.behavior.NodeResult;
 import com.lee9213.behavior.exception.BehaviorNodeExecuteException;

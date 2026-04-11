@@ -1,4 +1,4 @@
-package com.lee9213.behavior.parser.json;
+package com.lee9213.behavior.parser.condition;
 
 import org.springframework.context.annotation.Condition;
 import org.springframework.context.annotation.ConditionContext;
@@ -11,7 +11,7 @@ import org.springframework.util.ClassUtils;
  * @author lee9213@163.com
  * @date 2024/6/17 09:45
  */
-public class JsonNodeParserCondition implements Condition {
+public class OnClassCondition implements Condition {
     @Override
     public boolean matches(ConditionContext conditionContext, AnnotatedTypeMetadata annotatedTypeMetadata) {
         String className = getClassOrMethodName(annotatedTypeMetadata);

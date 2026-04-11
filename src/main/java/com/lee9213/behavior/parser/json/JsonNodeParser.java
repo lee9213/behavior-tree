@@ -7,11 +7,15 @@ import com.lee9213.behavior.BehaviorNodeWrapper;
 import com.lee9213.behavior.NodeResult;
 import com.lee9213.behavior.enums.NodeType;
 import com.lee9213.behavior.parser.*;
+import com.lee9213.behavior.parser.condition.ConditionalOnClass;
+import com.lee9213.behavior.parser.condition.OnClassCondition;
+import org.springframework.context.annotation.Conditional;
 
 /**
  * @author lee9213@163.com
  * @date 2024/5/31 15:07
  */
+@ConditionalOnClass(JSONObject.class)
 public class JsonNodeParser<Result extends NodeResult, Context extends BaseContext> {
 
     public BehaviorNodeWrapper<Result, Context> parse(String json, Class<?> resultClazz) {

@@ -16,6 +16,10 @@
   <dependencies>
     <dependency>
       <groupId>com.lee9213.behavior</groupId>
+      <artifactId>behavior-tree-core</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.lee9213.behavior</groupId>
       <artifactId>behavior-tree-engine</artifactId>
     </dependency>
     <dependency>

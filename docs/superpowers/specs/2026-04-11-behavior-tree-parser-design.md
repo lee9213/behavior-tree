@@ -7,7 +7,7 @@
 
 ## 1. 背景与目标
 
-当前 `com.lee9213.behavior.parser` 以 `JsonNodeParser` + 若干 `*NodeParser` 分支实现 JSON → `BehaviorNodeWrapper`，XML 侧未实现，职责与语法耦合、扩展格式成本高。
+旧版 `com.lee9213.behavior.parser`（`JsonNodeParser` + 若干 `*NodeParser`）已移除；原 JSON → `BehaviorNodeWrapper` 的职责由新规格中的 **IR + 语法 codec + DefinitionAssembler** 承接。
 
 本规格要求 **整体重构**：以 **领域中间表示（IR）** 为中心，**JSON / XML 仅作为语法前端**，经 **统一语义装配层** 产出 `BehaviorNodeWrapper`，并同时支持 **无 Spring 的 API** 与 **Spring Boot 配置驱动加载**。
 
@@ -16,7 +16,7 @@
 - 提供 **统一入口**：由字符串或流 + **格式枚举** 解析为运行时树；错误类型可区分「语法层」与「语义层」。
 - **JSON 与 XML 绑定到同构 IR**，对等价定义得到一致装配结果（可用黄金用例校验）。
 - Spring 下可通过 **属性** 指定资源位置、格式、编码等，与 `@EnableBehavior` / 动作 Bean 解析 **正交**（互不替代）。
-- 旧 `parser` 包经 **@Deprecated** 过渡期后可移除；迁移说明见 §8。
+- 旧 `parser` 包 **不作兼容期保留**，与主版本一并删除；迁移说明见 §8。
 
 **非目标（本版本）**
 
@@ -102,14 +102,13 @@
   - `charset`：可选，默认 UTF-8
 - **Bean**：提供 `BehaviorTreeDefinitionLoader` 或按需暴露「已解析的根 `BehaviorNodeWrapper`」之一；规格推荐 **Loader Bean** 更通用。
 - **条件装配**：仅在存在配置或资源时创建，避免无定义时启动失败；具体条件在实现计划中列出。
-- **与 `@EnableBehavior`**：保留；动作用 `IActionNode` Bean 名解析的逻辑由 **ActionNodeResolver** 的 Spring 实现提供，**不**与定义加载混在一个类中。
+- **与 `@EnableBehavior`**：保留（包名 **`com.lee9213.behavior.spring`**，导入 `SpringNodeUtil`）；动作用 `IActionNode` Bean 名解析的逻辑由 **ActionNodeResolver** 的 Spring 实现提供，**不**与定义加载混在一个类中。
 
 ---
 
 ## 8. 迁移与废弃
 
-- 旧包 `com.lee9213.behavior.parser.*` 整体标记 **@Deprecated**，附 **Javadoc：迁移至新包与 Loader API**。
-- 至少保留 **一个主版本** 的兼容期（时长由发布策略决定），随后删除旧实现。
+- 旧包 **`com.lee9213.behavior.parser.*` 已删除**，不设 **@Deprecated** 过渡期；调用方迁移至 **Loader API + 新包**（实现阶段落地）。
 - **README** 与 **CHANGELOG**（若有）需列出破坏性变更与示例替换代码。
 
 ---
@@ -133,3 +132,4 @@
 | 日期 | 变更 |
 |------|------|
 | 2026-04-11 | 初稿：全量重构、IR 中心、JSON/XML、API + Spring、废弃旧 parser |
+| 2026-04-11 | 修订：旧 `parser` 包直接删除；`@EnableBehavior` 迁至 `com.lee9213.behavior.spring` |

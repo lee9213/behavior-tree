@@ -1,7 +1,11 @@
 package com.lee9213.behavior;
 
-import com.lee9213.behavior.parser.json.JsonNodeParser;
-import com.lee9213.behavior.parser.spring.EnableBehavior;
+import com.lee9213.behavior.definition.BehaviorTreeDefinitionLoader;
+import com.lee9213.behavior.definition.DefinitionFormat;
+import com.lee9213.behavior.definition.resolve.CompositeActionNodeResolver;
+import com.lee9213.behavior.definition.resolve.ReflectionActionNodeResolver;
+import com.lee9213.behavior.spring.EnableBehavior;
+import com.lee9213.behavior.spring.SpringBeanActionNodeResolver;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.context.annotation.ComponentScan;
@@ -9,9 +13,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import java.io.FileInputStream;
-import java.nio.ByteBuffer;
-import java.nio.channels.FileChannel;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 
 /**
  * @author lee9213@163.com
@@ -23,17 +26,17 @@ public class BehaviorTreeTest {
 
     @Test
     public void execute() throws Exception {
-        FileInputStream fileInputStream = new FileInputStream(getClass().getResource("/").getPath() + "test.json");
-        FileChannel channel = fileInputStream.getChannel();
-        ByteBuffer byteBuffer = ByteBuffer.allocate((int)channel.size());
-        channel.read(byteBuffer);
-        String json = new String(byteBuffer.array(), "UTF-8");
-        channel.close();
-        fileInputStream.close();
-
-        TestContext testContext = new TestContext();
-        BehaviorTree behaviorTree = new BehaviorTree<>(new JsonNodeParser().parse(json, TestNodeResult.class));
-        behaviorTree.execute(testContext);
+        try (InputStream in = getClass().getResourceAsStream("/definitions/golden.json")) {
+            CompositeActionNodeResolver resolver = new CompositeActionNodeResolver(
+                    new SpringBeanActionNodeResolver(),
+                    new ReflectionActionNodeResolver());
+            BehaviorTreeDefinitionLoader loader = new BehaviorTreeDefinitionLoader(resolver);
+            BehaviorNodeWrapper<TestNodeResult, BaseContext> root =
+                    loader.parse(in, StandardCharsets.UTF_8, DefinitionFormat.JSON, TestNodeResult.class);
+            TestContext testContext = new TestContext();
+            BehaviorTree<TestNodeResult, BaseContext> behaviorTree = new BehaviorTree<>(root);
+            behaviorTree.execute(testContext);
+        }
     }
 }
 
@@ -43,4 +46,3 @@ public class BehaviorTreeTest {
 class TestConfiguration {
 
 }
-

@@ -5,9 +5,9 @@
 
 | 模块 | 说明 |
 |------|------|
-| `behavior-tree-core` | 行为树内核、JSON/XML 解析、`FlowExecutionContext`、`ParallelNodeImpl`；重试核心（`RetryExecutor`、`RetryPolicy`、`RetryPolicyRegistry`）；叶子抽象 `AbstractActionNode` 等 |
+| `behavior-tree-core` | 行为树内核；定义加载（`com.lee9213.behavior.definition.BehaviorTreeDefinitionLoader`，JSON/XML → IR → 装配）；`FlowExecutionContext`、`ParallelNodeImpl`；重试（`RetryExecutor`、`RetryPolicy`、`RetryPolicyRegistry`）；叶子抽象 `AbstractActionNode` 等 |
 | `behavior-tree-engine` | 流程定义校验、`FlowEngine`、`FlowEngineConfig`、内存 `ProcessInstanceStore` 等 |
-| `behavior-tree-spring-boot-starter` | Spring Boot 3.x：`RedisProcessInstanceStore`（支持 `behavior.flow.redis-entry-ttl` 配置过期时间）、自动配置（无 Redis 时不静默降级为内存，需自行装配 store） |
+| `behavior-tree-spring-boot-starter` | Spring Boot 3.x：`BehaviorTreeDefinitionLoader` 默认 Bean（可与 `@EnableBehavior` 组合）；`RedisProcessInstanceStore`（`behavior.flow.redis-entry-ttl`）；流程引擎自动配置（无 Redis 时不静默降级为内存，需自行装配 store） |
 
 构建：`mvn test`（JDK 17）。
 
@@ -35,11 +35,13 @@
 ## Action
 行为节点接口，具体执行某个行为的节点都需要实现该接口
 
-# 具体功能
-支持json文件解析
-支持spring容器的动作节点。
+# 定义加载（破坏性变更说明）
 
+- 旧包 `com.lee9213.behavior.parser` 已移除。
+- 使用 **`BehaviorTreeDefinitionLoader`**：传入 JSON 或 XML 字符串/流、`DefinitionFormat` 与 `Class<? extends NodeResult>`，得到根 `BehaviorNodeWrapper`（动作解析：`container=spring` 时从 Spring 容器按 Bean 名取 `IActionNode`，否则按 `beanName` 全限定类名反射 `newInstance`）。
+- Spring：`@EnableBehavior`（`com.lee9213.behavior.spring`）注册 `SpringNodeUtil`；**starter** 另提供默认 **`BehaviorTreeDefinitionLoader` Bean**（`CompositeActionNodeResolver`）。可选配置前缀 **`behavior.definition`**：`location`、`format`（`JSON`/`XML`）、`charset`（用于应用侧自行用 `Resource` 读入定义时使用；自动装配仅注册 Loader，不强制从 `location` 解析根节点，以免缺少 `resultClass` 元数据）。
 
 # 示例
-1. 创建一个行为树，并添加根节点，具体见com.lee9213.behavior.BehaviorTreeTest。
-2. 执行根节点，并返回执行结果
+
+1. 从 classpath 读取 JSON 定义并执行：见 `com.lee9213.behavior.BehaviorTreeTest`（`definitions/golden.json`）。
+2. 执行根节点并返回结果：`BehaviorTree#execute`。

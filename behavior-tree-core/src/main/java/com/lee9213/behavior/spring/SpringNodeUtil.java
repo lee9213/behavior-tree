@@ -1,4 +1,4 @@
-package com.lee9213.behavior.parser.spring;
+package com.lee9213.behavior.spring;
 
 import com.lee9213.behavior.node.IActionNode;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,7 +20,7 @@ public class SpringNodeUtil {
 
     @Autowired
     public void setApplicationContext(ApplicationContext applicationContext) {
-        this.applicationContext = applicationContext;
+        SpringNodeUtil.applicationContext = applicationContext;
     }
 
     public static IActionNode getBehaviorNode(String beanName) {

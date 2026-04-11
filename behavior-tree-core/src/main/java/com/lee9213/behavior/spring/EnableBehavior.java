@@ -1,4 +1,4 @@
-package com.lee9213.behavior.parser.spring;
+package com.lee9213.behavior.spring;
 
 import org.springframework.context.annotation.Import;
 

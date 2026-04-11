@@ -25,10 +25,18 @@
     <log4j.version>2.18.0</log4j.version>
     <fastjson.version>1.2.78</fastjson.version>
     <spring.version>5.3.39</spring.version>
+    <spring-boot.version>3.2.5</spring-boot.version>
   </properties>
 
   <dependencyManagement>
     <dependencies>
+      <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-dependencies</artifactId>
+        <version>${spring-boot.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
       <dependency>
         <groupId>com.lee9213.behavior</groupId>
         <artifactId>behavior-tree-core</artifactId>

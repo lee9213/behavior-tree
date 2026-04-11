@@ -7,6 +7,7 @@ import lombok.Getter;
 
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Executor;
 
 /**
  * @author lee9213@163.com
@@ -31,6 +32,13 @@ public class BehaviorNodeWrapper<Result extends NodeResult, Context extends Base
 
     public BehaviorNodeWrapper<Result, Context> buildParallelNode(String nodeName, List<BehaviorNodeWrapper<Result, Context>> childNodeList) {
         return new BehaviorNodeWrapper<>(nodeName, new ParallelNodeImpl<>(childNodeList));
+    }
+
+    public BehaviorNodeWrapper<Result, Context> buildConcurrentParallelNode(
+            String nodeName,
+            List<BehaviorNodeWrapper<Result, Context>> childNodeList,
+            Executor executor) {
+        return new BehaviorNodeWrapper<>(nodeName, new ConcurrentParallelNodeImpl<>(childNodeList, executor));
     }
 
     public BehaviorNodeWrapper<Result, Context> buildRandomNode(String nodeName, List<BehaviorNodeWrapper<Result, Context>> childNodeList) {

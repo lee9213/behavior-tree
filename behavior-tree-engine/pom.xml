@@ -18,6 +18,12 @@
       <groupId>com.lee9213.behavior</groupId>
       <artifactId>behavior-tree-core</artifactId>
     </dependency>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter</artifactId>
+      <version>${junit.version}</version>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
   <build>

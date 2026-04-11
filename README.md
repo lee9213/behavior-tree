@@ -5,8 +5,8 @@
 
 | 模块 | 说明 |
 |------|------|
-| `behavior-tree-core` | 行为树内核、JSON/XML 解析、`FlowExecutionContext`、`ParallelNodeImpl`（可传入 `Executor` 并发执行子节点，不传则顺序执行）等 |
-| `behavior-tree-engine` | 流程定义校验、`FlowEngine`、重试策略 SPI、`AbstractRetryableActionNode`、内存 `ProcessInstanceStore` |
+| `behavior-tree-core` | 行为树内核、JSON/XML 解析、`FlowExecutionContext`、`ParallelNodeImpl`；重试核心（`RetryExecutor`、`RetryPolicy`、`RetryPolicyRegistry`）；叶子抽象 `AbstractActionNode` 等 |
+| `behavior-tree-engine` | 流程定义校验、`FlowEngine`、`FlowEngineConfig`、内存 `ProcessInstanceStore` 等 |
 | `behavior-tree-spring-boot-starter` | Spring Boot 3.x：`RedisProcessInstanceStore`（支持 `behavior.flow.redis-entry-ttl` 配置过期时间）、自动配置（无 Redis 时不静默降级为内存，需自行装配 store） |
 
 构建：`mvn test`（JDK 17）。
@@ -14,7 +14,7 @@
 ### 流程引擎与规格对齐说明
 
 - **持久化**：`FlowEngine.run` 在配置了 store 时会先 **load** 已有快照；若存在且 `definitionId`/`definitionVersion` 与当前 `FlowDefinition` 不一致则 **fail-closed**（`StoreException`）。
-- **重试**：`RetryExecutor` + `RetryPolicyRegistry` 已提供；叶子可继承 `AbstractRetryableActionNode`（构造参数传入是否启用重试与 `RetryPolicy`）。全局与节点级组合策略可后续扩展。
+- **重试（core）**：`com.lee9213.behavior.retry` 提供 `RetryExecutor`、`RetryPolicy`、`RetryPolicyRegistry`；叶子可继承 `com.lee9213.behavior.action.AbstractActionNode`（构造参数传入是否启用重试与 `RetryPolicy`）。`FlowEngineConfig` 仍持有注册表供引擎侧使用。全局与节点级组合策略可后续扩展。
 - 设计文档：`docs/superpowers/specs/2026-04-11-behavior-flow-engine-design.md`。
 
 # 控制节点

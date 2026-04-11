@@ -1,8 +1,8 @@
-package com.lee9213.behavior.engine.action;
+package com.lee9213.behavior.action;
 
 import com.lee9213.behavior.NodeResult;
-import com.lee9213.behavior.engine.retry.RetryPolicy;
 import com.lee9213.behavior.flow.FlowExecutionContext;
+import com.lee9213.behavior.retry.RetryPolicy;
 import org.junit.jupiter.api.Test;
 
 import java.util.concurrent.atomic.AtomicInteger;
@@ -10,13 +10,13 @@ import java.util.concurrent.atomic.AtomicInteger;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-class AbstractRetryableActionNodeTest {
+class AbstractActionNodeTest {
 
     @Test
     void retryDisabled_仅执行一次() {
         AtomicInteger attempts = new AtomicInteger();
         RetryPolicy policy = new RetryPolicy(5, 1L, 2.0, 0.0);
-        AbstractRetryableActionNode node = new AbstractRetryableActionNode(false, policy) {
+        AbstractActionNode node = new AbstractActionNode(false, policy) {
             @Override
             protected NodeResult doExecute(FlowExecutionContext context) {
                 attempts.incrementAndGet();
@@ -31,7 +31,7 @@ class AbstractRetryableActionNodeTest {
     void retryEnabled_失败时按策略多次尝试() {
         AtomicInteger attempts = new AtomicInteger();
         RetryPolicy policy = new RetryPolicy(3, 1L, 2.0, 0.0);
-        AbstractRetryableActionNode node = new AbstractRetryableActionNode(true, policy) {
+        AbstractActionNode node = new AbstractActionNode(true, policy) {
             @Override
             protected NodeResult doExecute(FlowExecutionContext context) {
                 attempts.incrementAndGet();

@@ -1,22 +1,22 @@
-package com.lee9213.behavior.engine.action;
+package com.lee9213.behavior.action;
 
 import com.lee9213.behavior.NodeResult;
-import com.lee9213.behavior.engine.retry.RetryExecutor;
-import com.lee9213.behavior.engine.retry.RetryPolicy;
 import com.lee9213.behavior.exception.BehaviorNodeExecuteException;
 import com.lee9213.behavior.flow.FlowExecutionContext;
 import com.lee9213.behavior.node.IActionNode;
+import com.lee9213.behavior.retry.RetryExecutor;
+import com.lee9213.behavior.retry.RetryPolicy;
 
 /**
  * 叶子动作节点抽象基类：按构造参数决定是否对 {@link #doExecute} 做自动重试（指数退避 + 抖动见 {@link RetryPolicy}）。
  * 全局引擎开关与节点开关的组合可在子类或后续版本中扩展。
  */
-public abstract class AbstractRetryableActionNode implements IActionNode<NodeResult, FlowExecutionContext> {
+public abstract class AbstractActionNode implements IActionNode<NodeResult, FlowExecutionContext> {
 
     private final boolean retryEnabled;
     private final RetryPolicy retryPolicy;
 
-    protected AbstractRetryableActionNode(boolean retryEnabled, RetryPolicy retryPolicy) {
+    protected AbstractActionNode(boolean retryEnabled, RetryPolicy retryPolicy) {
         this.retryEnabled = retryEnabled;
         this.retryPolicy = retryPolicy;
     }

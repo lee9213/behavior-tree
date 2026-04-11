@@ -1,4 +1,4 @@
-package com.lee9213.behavior.engine.retry;
+package com.lee9213.behavior.retry;
 
 import java.util.concurrent.ThreadLocalRandom;
 

@@ -38,6 +38,13 @@
         <scope>import</scope>
       </dependency>
       <dependency>
+        <groupId>com.fasterxml.jackson</groupId>
+        <artifactId>jackson-bom</artifactId>
+        <version>2.17.2</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+      <dependency>
         <groupId>com.lee9213.behavior</groupId>
         <artifactId>behavior-tree-core</artifactId>
         <version>${project.version}</version>

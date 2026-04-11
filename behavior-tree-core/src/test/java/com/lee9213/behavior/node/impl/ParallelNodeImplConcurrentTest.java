@@ -13,16 +13,16 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-class ConcurrentParallelNodeImplTest {
+class ParallelNodeImplConcurrentTest {
 
     @Test
-    void runsChildrenOnExecutorAndJoins() {
+    void executor非空时在线程池上并发执行子节点并汇合() {
         ExecutorService pool = Executors.newFixedThreadPool(4);
         AtomicInteger counter = new AtomicInteger();
         BehaviorNodeWrapper<NodeResult, FlowExecutionContext> leaf1 = leaf("a", counter);
         BehaviorNodeWrapper<NodeResult, FlowExecutionContext> leaf2 = leaf("b", counter);
         BehaviorNodeWrapper<NodeResult, FlowExecutionContext> parallel = new BehaviorNodeWrapper<NodeResult, FlowExecutionContext>()
-                .buildConcurrentParallelNode("p", List.of(leaf1, leaf2), pool);
+                .buildParallelNode("p", List.of(leaf1, leaf2), pool);
 
         FlowExecutionContext ctx = new FlowExecutionContext();
         NodeResult r = parallel.getNode().execute(ctx);

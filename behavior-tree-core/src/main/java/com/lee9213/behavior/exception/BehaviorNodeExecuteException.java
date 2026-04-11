@@ -10,4 +10,8 @@ public class BehaviorNodeExecuteException extends RuntimeException {
     public BehaviorNodeExecuteException(String message) {
         super(message);
     }
+
+    public BehaviorNodeExecuteException(String message, Throwable cause) {
+        super(message, cause);
+    }
 }

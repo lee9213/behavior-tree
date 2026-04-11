@@ -9,6 +9,7 @@ import com.lee9213.behavior.engine.store.ProcessInstanceStore;
 import com.lee9213.behavior.engine.store.StoreException;
 import org.springframework.data.redis.core.StringRedisTemplate;
 
+import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -19,10 +20,16 @@ public final class RedisProcessInstanceStore implements ProcessInstanceStore {
 
     private final StringRedisTemplate redisTemplate;
     private final ObjectMapper objectMapper;
+    private final Duration entryTtl;
 
     public RedisProcessInstanceStore(StringRedisTemplate redisTemplate, ObjectMapper objectMapper) {
+        this(redisTemplate, objectMapper, null);
+    }
+
+    public RedisProcessInstanceStore(StringRedisTemplate redisTemplate, ObjectMapper objectMapper, Duration entryTtl) {
         this.redisTemplate = redisTemplate;
         this.objectMapper = objectMapper;
+        this.entryTtl = entryTtl;
     }
 
     private static String key(String instanceId) {
@@ -46,7 +53,12 @@ public final class RedisProcessInstanceStore implements ProcessInstanceStore {
     public void save(String instanceId, FlowInstanceSnapshot snapshot) throws StoreException {
         try {
             String json = objectMapper.writeValueAsString(snapshot);
-            redisTemplate.opsForValue().set(key(instanceId), json);
+            String k = key(instanceId);
+            if (entryTtl != null && !entryTtl.isNegative() && !entryTtl.isZero()) {
+                redisTemplate.opsForValue().set(k, json, entryTtl);
+            } else {
+                redisTemplate.opsForValue().set(k, json);
+            }
         } catch (JsonProcessingException e) {
             throw new StoreException("Failed to serialize flow instance snapshot: " + instanceId, e);
         } catch (Exception e) {

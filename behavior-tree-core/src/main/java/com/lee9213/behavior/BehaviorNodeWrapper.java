@@ -34,14 +34,14 @@ public class BehaviorNodeWrapper<Result extends NodeResult, Context extends Base
     }
 
     public BehaviorNodeWrapper<Result, Context> buildParallelNode(String nodeName, List<BehaviorNodeWrapper<Result, Context>> childNodeList) {
-        return new BehaviorNodeWrapper<>(nodeName, new ParallelNodeImpl<>(childNodeList));
+        return new BehaviorNodeWrapper<>(nodeName, new ParallelNodeImpl<>(childNodeList, null));
     }
 
-    public BehaviorNodeWrapper<Result, Context> buildConcurrentParallelNode(
+    public BehaviorNodeWrapper<Result, Context> buildParallelNode(
             String nodeName,
             List<BehaviorNodeWrapper<Result, Context>> childNodeList,
             Executor executor) {
-        return new BehaviorNodeWrapper<>(nodeName, new ConcurrentParallelNodeImpl<>(childNodeList, executor));
+        return new BehaviorNodeWrapper<>(nodeName, new ParallelNodeImpl<>(childNodeList, executor));
     }
 
     public BehaviorNodeWrapper<Result, Context> buildRandomNode(String nodeName, List<BehaviorNodeWrapper<Result, Context>> childNodeList) {

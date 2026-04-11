@@ -17,8 +17,11 @@ public class BehaviorFlowAutoConfiguration {
 
     @Bean
     @ConditionalOnBean(StringRedisTemplate.class)
-    RedisProcessInstanceStore redisProcessInstanceStore(StringRedisTemplate redisTemplate, ObjectMapper objectMapper) {
-        return new RedisProcessInstanceStore(redisTemplate, objectMapper);
+    RedisProcessInstanceStore redisProcessInstanceStore(
+            StringRedisTemplate redisTemplate,
+            ObjectMapper objectMapper,
+            FlowEngineProperties properties) {
+        return new RedisProcessInstanceStore(redisTemplate, objectMapper, properties.getRedisEntryTtl());
     }
 
     @Bean

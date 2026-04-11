@@ -26,6 +26,14 @@ public final class StrategyNodeImpl<Result extends NodeResult,Context extends Ba
         this.strategyMap = strategyMap;
     }
 
+    public BehaviorNodeWrapper<Result, Context> getConditionWrapper() {
+        return conditionNode;
+    }
+
+    public Map<Result, BehaviorNodeWrapper<Result, Context>> getStrategyMap() {
+        return strategyMap;
+    }
+
     @Override
     public Result execute(Context context) {
         context.setCurrentNode(conditionNode);

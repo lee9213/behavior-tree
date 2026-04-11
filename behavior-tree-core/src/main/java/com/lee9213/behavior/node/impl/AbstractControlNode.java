@@ -7,6 +7,8 @@ import com.lee9213.behavior.NodeResult;
 import com.lee9213.behavior.exception.BehaviorNodeExecuteException;
 import com.lee9213.behavior.node.IControlNode;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -29,5 +31,15 @@ public abstract class AbstractControlNode<Result extends NodeResult,Context exte
         if (nodeResult == null) {
             throw new BehaviorNodeExecuteException("节点执行结果为空");
         }
+    }
+
+    /**
+     * Structural child wrappers for validation and tooling. Empty when there are no children.
+     */
+    public List<BehaviorNodeWrapper<Result, Context>> getChildWrappers() {
+        if (childNodeList == null) {
+            return Collections.emptyList();
+        }
+        return Collections.unmodifiableList(new ArrayList<>(childNodeList));
     }
 }

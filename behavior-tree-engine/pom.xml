@@ -15,6 +15,12 @@
 
   <dependencies>
     <dependency>
+      <groupId>org.projectlombok</groupId>
+      <artifactId>lombok</artifactId>
+      <version>${lombok.version}</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
       <groupId>com.lee9213.behavior</groupId>
       <artifactId>behavior-tree-core</artifactId>
     </dependency>

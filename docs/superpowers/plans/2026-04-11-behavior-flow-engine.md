@@ -1,73 +1,73 @@
-# Behavior Flow Engine Implementation Plan
+# 行为流引擎实现计划
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **面向代理执行者：** 必须配合子技能：使用 superpowers:subagent-driven-development（推荐）或 superpowers:executing-plans，**按任务逐步**落实本计划。步骤使用复选框（`- [ ]`）语法便于跟踪。
 
-**Goal:** Add a flow engine layer on top of the existing behavior-tree library: synchronous blocking `run`, optional Redis-backed or in-memory `ProcessInstanceStore`, engine-level retry toggle, tag-based retry policies with exponential backoff and jitter, and concurrent Parallel execution via an injected `Executor` without cancelling sibling tasks on failure—while keeping v1 definitions as pure trees with defensive acyclicity validation.
+**目标：** 在现有 behavior-tree 库之上增加流程引擎层：同步阻塞式 `run`；可选用 Redis 或内存的 `ProcessInstanceStore`；引擎级重试总开关；按标签的重试策略（指数退避 + 抖动）；通过注入的 `Executor` 实现 Parallel **真并发**，子分支失败时**不**取消兄弟任务；v1 定义保持纯树，并做防御性无环校验。
 
-**Architecture:** Convert the repository to a **multi-module Maven reactor** (`behavior-tree-core` = current library on **JDK 17**, `behavior-tree-engine` = `FlowDefinition`, `FlowEngine`, retry, store SPI + memory, `ConcurrentParallelNodeImpl`, validation; `behavior-tree-spring-boot-starter` = Spring Boot 3 / Spring 6 auto-configuration for `Executor`, Redis-backed store, and engine beans). Execution stays **behavior-tree–driven**: the engine wraps `BehaviorTree.execute` with a **`FlowExecutionContext`** that supports **branch-local context copies** for safe parallel execution.
+**架构：** 将仓库改为 **Maven 多模块 reactor**（`behavior-tree-core` = 现有库，**JDK 17**；`behavior-tree-engine` = `FlowDefinition`、`FlowEngine`、重试、存储 SPI + 内存、`ConcurrentParallelNodeImpl`、校验；`behavior-tree-spring-boot-starter` = Spring Boot 3 / Spring 6 自动配置 `Executor`、基于 Redis 的存储与引擎 Bean）。执行仍以 **行为树** 为驱动：引擎在 `BehaviorTree.execute` 外包一层，使用支持 **分支级上下文拷贝** 的 `FlowExecutionContext`，以保证并行安全。
 
-**Tech Stack:** Maven 3.9+, JDK 17, JUnit 5, Lombok (align versions in parent POM), existing Guava/log4j/fastjson in core as today; engine adds minimal deps; Spring Boot 3.2.x (Spring Framework 6.x) + `spring-boot-starter-data-redis` (Lettuce) for the starter module; JSON serialization for Redis payloads via **Jackson** (add in starter + engine test scope if needed).
+**技术栈：** Maven 3.9+，JDK 17，JUnit 5，Lombok（版本在父 POM 对齐）；core 中沿用现有 Guava / log4j / fastjson；engine 尽量少加依赖；starter 模块使用 Spring Boot 3.2.x（Spring Framework 6.x）+ `spring-boot-starter-data-redis`（Lettuce）；Redis 载荷 JSON 序列化使用 **Jackson**（在 starter 中引入，必要时 engine 测试 scope）。
 
-**Context:** Prefer implementing in a **dedicated git worktree** (see superpowers:using-git-worktrees) so the reactor refactor stays isolated until green.
+**上下文：** 建议在 **独立 git worktree** 中实现（见 superpowers:using-git-worktrees），reactor 重构在全部变绿前保持隔离。
 
 ---
 
-## File structure (target)
+## 目标文件结构
 
-| Path | Responsibility |
-|------|----------------|
-| `pom.xml` | Parent aggregator: `dependencyManagement`, JDK 17, plugin versions, `<modules>` |
-| `behavior-tree-core/pom.xml` | Existing behavior-tree artifact (coordinates may become `behavior-tree-core`—see Task 1 note) |
-| `behavior-tree-core/src/main/java/com/lee9213/behavior/**` | Current code **unchanged** except small, listed edits (`BehaviorNodeWrapper`, new parallel impl) |
-| `behavior-tree-engine/pom.xml` | Depends on `behavior-tree-core` |
-| `behavior-tree-engine/src/main/java/com/lee9213/behavior/engine/FlowDefinition.java` | Immutable: id, version, `BehaviorTree` root |
-| `behavior-tree-engine/.../FlowInstanceSnapshot.java` | Serializable state for store |
-| `behavior-tree-engine/.../FlowEngineConfig.java` | `retryEnabled`, `Executor`, `ProcessInstanceStore`, `RetryPolicyRegistry`, timeouts |
-| `behavior-tree-core/.../flow/FlowExecutionContext.java` | Extends `BaseContext`; `copyForParallelBranch()` for thread isolation (**must live in core** so `ConcurrentParallelNodeImpl` does not depend on engine) |
+| 路径 | 职责 |
+|------|------|
+| `pom.xml` | 父聚合：`dependencyManagement`、JDK 17、插件版本、`<modules>` |
+| `behavior-tree-core/pom.xml` | 原 behavior-tree 构件（坐标可改为 `behavior-tree-core`—见任务 1 说明） |
+| `behavior-tree-core/src/main/java/com/lee9213/behavior/**` | 现有代码 **除下列小改外保持不变**（`BehaviorNodeWrapper`、新并行实现） |
+| `behavior-tree-engine/pom.xml` | 依赖 `behavior-tree-core` |
+| `behavior-tree-engine/.../FlowDefinition.java` | 不可变：id、version、`BehaviorTree` 根 |
+| `behavior-tree-engine/.../FlowInstanceSnapshot.java` | 可序列化、供存储使用的实例状态 |
+| `behavior-tree-engine/.../FlowEngineConfig.java` | `retryEnabled`、`Executor`、`ProcessInstanceStore`、`RetryPolicyRegistry`、超时等 |
+| `behavior-tree-core/.../flow/FlowExecutionContext.java` | 继承 `BaseContext`；`copyForParallelBranch()` 用于线程隔离（**必须放在 core**，避免 `ConcurrentParallelNodeImpl` 依赖 engine） |
 | `behavior-tree-engine/.../FlowEngine.java` | `run(instanceId, FlowDefinition, FlowExecutionContext initialContext)` |
-| `behavior-tree-engine/.../retry/RetryPolicy.java` | max attempts, base delay, multiplier, jitter ratio |
-| `behavior-tree-engine/.../retry/RetryPolicyRegistry.java` | resolve by step tag / type key |
-| `behavior-tree-engine/.../retry/RetryExecutor.java` | applies policy + sleep; respects `retryEnabled` |
-| `behavior-tree-engine/.../store/ProcessInstanceStore.java` | load/save/delete |
+| `behavior-tree-engine/.../retry/RetryPolicy.java` | 最大次数、基础延迟、倍数、抖动比例 |
+| `behavior-tree-engine/.../retry/RetryPolicyRegistry.java` | 按步骤 tag / 类型键解析策略 |
+| `behavior-tree-engine/.../retry/RetryExecutor.java` | 执行策略 + 休眠；尊重 `retryEnabled` |
+| `behavior-tree-engine/.../store/ProcessInstanceStore.java` | load / save / delete |
 | `behavior-tree-engine/.../store/InMemoryProcessInstanceStore.java` | `ConcurrentHashMap` |
-| `behavior-tree-engine/.../store/StoreException.java` | unchecked or checked—pick one and use consistently |
-| `behavior-tree-engine/.../validation/FlowDefinitionValidator.java` | structural checks + `ExecutionGraphSanityChecker` (tree ⇒ DAG) |
-| `behavior-tree-core/.../ParallelNodeImpl.java` | Keep as-is for backward compatibility |
-| `behavior-tree-core/.../ConcurrentParallelNodeImpl.java` | New: `Executor` + children; join semantics match spec §4 |
-| `behavior-tree-spring-boot-starter/pom.xml` | Depends on engine + spring-boot-starter-data-redis |
-| `behavior-tree-spring-boot-starter/.../BehaviorFlowAutoConfiguration.java` | `@AutoConfiguration`, beans |
-| `behavior-tree-engine/src/test/java/**` | JUnit 5 tests |
+| `behavior-tree-engine/.../store/StoreException.java` | 受检或非受检—任选一种，全文一致 |
+| `behavior-tree-engine/.../validation/FlowDefinitionValidator.java` | 结构检查 + `ExecutionGraphSanityChecker`（树 ⇒ DAG） |
+| `behavior-tree-core/.../ParallelNodeImpl.java` | 保持兼容，行为不变 |
+| `behavior-tree-core/.../ConcurrentParallelNodeImpl.java` | 新增：`Executor` + 子节点；汇合语义对齐规格 §4 |
+| `behavior-tree-spring-boot-starter/pom.xml` | 依赖 engine + spring-boot-starter-data-redis |
+| `behavior-tree-spring-boot-starter/.../BehaviorFlowAutoConfiguration.java` | `@AutoConfiguration`、Bean 定义 |
+| `behavior-tree-engine/src/test/java/**` | JUnit 5 测试 |
 
 ---
 
-## Spec coverage map
+## 与规格章节的对应关系
 
-| Spec section | Tasks |
-|--------------|-------|
-| §2 Retry 总开关 | Task 4 (`FlowEngineConfig.retryEnabled`, `RetryExecutor`) |
-| §3 Loader + 校验 | Task 3 (`FlowDefinitionValidator`, `FlowDefinition`) |
-| §3 Engine 同步 run + 持久化边界 | Task 5 (`FlowEngine`, snapshot save points) |
-| §3–4 Parallel 真并发、不取消 | Task 2 (`ConcurrentParallelNodeImpl`, `FlowExecutionContext.copyForParallelBranch`) |
-| §5 重试策略 | Task 4 (`RetryPolicy`, registry, backoff+jitter) |
-| §6 存储 fail-closed | Task 6 + 7 (no silent fallback; throw `StoreException`) |
-| §7 测试 | Task 8 (required), Task 9 optional decorator |
-| §8 多模块 JDK17 / Spring6 | Tasks 1 + 7 |
+| 规格章节 | 任务 |
+|----------|------|
+| §2 Retry 总开关 | 任务 4（`FlowEngineConfig.retryEnabled`、`RetryExecutor`） |
+| §3 Loader + 校验 | 任务 3（`FlowDefinitionValidator`、`FlowDefinition`） |
+| §3 Engine 同步 run + 持久化边界 | 任务 5（`FlowEngine`、快照写入点） |
+| §3–4 Parallel 真并发、不取消 | 任务 2（`ConcurrentParallelNodeImpl`、`FlowExecutionContext.copyForParallelBranch`） |
+| §5 重试策略 | 任务 4（`RetryPolicy`、注册表、退避 + 抖动） |
+| §6 存储 fail-closed | 任务 6 + 7（禁止静默降级；抛出 `StoreException`） |
+| §7 测试 | 任务 8（必做），任务 9 可选装饰器 |
+| §8 多模块 JDK17 / Spring6 | 任务 1 + 7 |
 
 ---
 
-### Task 1: Multi-module reactor + JDK 17 for `behavior-tree-core`
+### 任务 1：多模块 reactor + `behavior-tree-core` 使用 JDK 17
 
-**Files:**
+**涉及文件：**
 
-- Modify: **repo root** `pom.xml` (replace current content with **parent** aggregator)
-- Create: `behavior-tree-core/pom.xml` (relocate current project metadata + dependencies from old root)
-- Move: `src/` → `behavior-tree-core/src/` (main + test)
-- Create: `behavior-tree-engine/pom.xml` (minimal skeleton, filled in later tasks)
-- Create: `behavior-tree-spring-boot-starter/pom.xml` (skeleton)
+- 修改：**仓库根目录** `pom.xml`（将当前内容替换为 **父 POM** 聚合）
+- 新建：`behavior-tree-core/pom.xml`（将原根项目元数据与依赖迁入）
+- 移动：`src/` → `behavior-tree-core/src/`（main + test）
+- 新建：`behavior-tree-engine/pom.xml`（最小骨架，后续任务补全）
+- 新建：`behavior-tree-spring-boot-starter/pom.xml`（骨架）
 
-**Note:** Publishing: if the world depends on `com.lee9213.behavior:behavior-tree`, either keep **artifactId** `behavior-tree` on the core module only, or publish a **relocation POM**—pick one and document in `README`. This plan uses **`behavior-tree-core`** as module directory and artifactId for clarity; adjust to `behavior-tree` if you must preserve the exact coordinate.
+**说明：** 若外部已依赖 `com.lee9213.behavior:behavior-tree`，可仅在 core 模块保留 **artifactId** `behavior-tree`，或发布 **relocation POM**—择一并在 `README` 说明。本计划为清晰起见使用目录名与 **artifactId** `behavior-tree-core`；若必须保留原坐标，可改为 `behavior-tree`。
 
-- [ ] **Step 1: Write new parent `pom.xml` at repo root**
+- [ ] **步骤 1：在仓库根目录写入新的父 `pom.xml`**
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
@@ -133,16 +133,16 @@
 </project>
 ```
 
-- [ ] **Step 2: Move existing project into `behavior-tree-core`**
+- [ ] **步骤 2：将现有工程移入 `behavior-tree-core`**
 
-Run from repo root (adjust if paths differ):
+在仓库根目录执行（路径不同时自行调整）：
 
 ```bash
 mkdir -p behavior-tree-core
 git mv src behavior-tree-core/src
 ```
 
-- [ ] **Step 3: Create `behavior-tree-core/pom.xml`** (copy dependencies from old root `pom.xml`, set parent + `artifactId` `behavior-tree-core`, `java.version` 17, reuse same dependency versions or bump conservatively)
+- [ ] **步骤 3：创建 `behavior-tree-core/pom.xml`**（从旧根 `pom.xml` 复制依赖，设置 parent、`artifactId` 为 `behavior-tree-core`、`java.version` 17；依赖版本可保守沿用或小幅升级）
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
@@ -162,16 +162,16 @@ git mv src behavior-tree-core/src
   <name>behavior-tree-core</name>
 
   <dependencies>
-    <!-- copy: lombok, guava, log4j-core, fastjson, spring-webmvc (or drop if unused), junit-jupiter, spring-test -->
+    <!-- 复制：lombok, guava, log4j-core, fastjson, spring-webmvc（未使用可删）, junit-jupiter, spring-test -->
   </dependencies>
 </project>
 ```
 
-Fill `<dependencies>` by copying lines 29–70 from the pre-refactor `pom.xml`, bump Spring only if you must compile on 17; core can temporarily keep Spring 5 for compilation **only inside core**—but prefer removing unused `spring-webmvc` from core if engine/starter own Spring 6.
+将重构前 `pom.xml` 第 29–70 行左右依赖填入 `<dependencies>`；若仅为在 JDK 17 下编译，core 可暂时保留 Spring 5—**更推荐**在 engine/starter 使用 Spring 6 时，从 core 移除未使用的 `spring-webmvc`。
 
-- [ ] **Step 3b: Add minimal `behavior-tree-engine` and `behavior-tree-spring-boot-starter` POMs**
+- [ ] **步骤 3b：为 `behavior-tree-engine` 与 `behavior-tree-spring-boot-starter` 添加最小 POM**
 
-So `mvn` from the parent can resolve all `<module>` entries. Example `behavior-tree-engine/pom.xml`:
+以便在父工程执行 `mvn` 时能解析全部 `<module>`。示例 `behavior-tree-engine/pom.xml`：
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
@@ -195,7 +195,7 @@ So `mvn` from the parent can resolve all `<module>` entries. Example `behavior-t
 </project>
 ```
 
-Example `behavior-tree-spring-boot-starter/pom.xml` (Spring Boot version pinned when you implement Task 6–7):
+示例 `behavior-tree-spring-boot-starter/pom.xml`（Spring Boot 版本在任务 6–7 中固定）：
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
@@ -219,19 +219,19 @@ Example `behavior-tree-spring-boot-starter/pom.xml` (Spring Boot version pinned 
 </project>
 ```
 
-Add `behavior-tree-engine` to parent `dependencyManagement` if not already listed (Task 1 parent snippet already includes it). Add `behavior-tree-spring-boot-starter` to `dependencyManagement` when you introduce its GAV.
+若父 POM 尚未列出 `behavior-tree-engine` 的 `dependencyManagement`，请补上（任务 1 父 POM 片段已含 engine）。引入 `behavior-tree-spring-boot-starter` 的 GAV 后，再将其加入 `dependencyManagement`。
 
-- [ ] **Step 4: Verify core compiles**
+- [ ] **步骤 4：验证 core 可编译**
 
-Run:
+执行：
 
 ```bash
 mvn -pl behavior-tree-core -am test
 ```
 
-Expected: `BUILD SUCCESS` (fix any Java 17 migration warnings/errors in core sources).
+期望：`BUILD SUCCESS`（修复 core 源码在 Java 17 下的告警/错误）。
 
-- [ ] **Step 5: Commit**
+- [ ] **步骤 5：提交**
 
 ```bash
 git add pom.xml behavior-tree-core
@@ -240,19 +240,19 @@ git commit -m "build: multi-module parent and behavior-tree-core on JDK 17"
 
 ---
 
-### Task 2: `FlowExecutionContext` + `ConcurrentParallelNodeImpl`
+### 任务 2：`FlowExecutionContext` + `ConcurrentParallelNodeImpl`
 
-**Files:**
+**涉及文件：**
 
-- Create: `behavior-tree-core/src/main/java/com/lee9213/behavior/flow/FlowExecutionContext.java` (**core**, not engine—avoids core→engine dependency)
-- Create: `behavior-tree-core/src/main/java/com/lee9213/behavior/node/impl/ConcurrentParallelNodeImpl.java`
-- Modify: `behavior-tree-core/src/main/java/com/lee9213/behavior/BehaviorNodeWrapper.java` — add `buildConcurrentParallelNode(String nodeName, List<...> children, Executor executor)`
+- 新建：`behavior-tree-core/src/main/java/com/lee9213/behavior/flow/FlowExecutionContext.java`（**放在 core**，不是 engine—避免 core→engine 依赖）
+- 新建：`behavior-tree-core/src/main/java/com/lee9213/behavior/node/impl/ConcurrentParallelNodeImpl.java`
+- 修改：`behavior-tree-core/src/main/java/com/lee9213/behavior/BehaviorNodeWrapper.java` — 增加 `buildConcurrentParallelNode(String nodeName, List<...> children, Executor executor)`
 
-**Rationale:** Parallel children must not share one mutable `BaseContext` across threads. `FlowExecutionContext` provides `copyForParallelBranch()`; `ConcurrentParallelNodeImpl` calls it per child **before** `execute`.
+**原因：** 并行子节点不能在线程间共享同一个可变 `BaseContext`。`FlowExecutionContext` 提供 `copyForParallelBranch()`；`ConcurrentParallelNodeImpl` 在每个子节点 `execute` **之前**调用它。
 
-- [ ] **Step 1: Add engine module dependency on core**
+- [ ] **步骤 1：engine 模块依赖 core**
 
-In `behavior-tree-engine/pom.xml`:
+在 `behavior-tree-engine/pom.xml` 中：
 
 ```xml
 <project>
@@ -278,11 +278,11 @@ In `behavior-tree-engine/pom.xml`:
 </project>
 ```
 
-Register `<module>behavior-tree-engine</module>` already in parent (Task 1).
+父 POM 中已包含 `<module>behavior-tree-engine</module>`（任务 1）。
 
-- [ ] **Step 2: Implement `FlowExecutionContext` (in core)**
+- [ ] **步骤 2：实现 `FlowExecutionContext`（在 core 中）**
 
-Create `behavior-tree-core/src/main/java/com/lee9213/behavior/flow/FlowExecutionContext.java`:
+创建 `behavior-tree-core/src/main/java/com/lee9213/behavior/flow/FlowExecutionContext.java`：
 
 ```java
 package com.lee9213.behavior.flow;
@@ -292,7 +292,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 /**
- * Execution context for the flow engine. Parallel branches must use {@link #copyForParallelBranch()}.
+ * 流程引擎执行上下文。并行分支必须使用 {@link #copyForParallelBranch()}。
  */
 @Getter
 @Setter
@@ -309,7 +309,7 @@ public class FlowExecutionContext extends BaseContext {
     }
 
     /**
-     * Override in application code if the context carries mutable domain state that must be isolated per branch.
+     * 若子类携带需在分支间隔离的可变业务字段，请在应用代码中覆盖本方法。
      */
     public FlowExecutionContext copyForParallelBranch() {
         return new FlowExecutionContext(this);
@@ -317,9 +317,9 @@ public class FlowExecutionContext extends BaseContext {
 }
 ```
 
-- [ ] **Step 3: Implement `ConcurrentParallelNodeImpl`**
+- [ ] **步骤 3：实现 `ConcurrentParallelNodeImpl`**
 
-Create `behavior-tree-core/src/main/java/com/lee9213/behavior/node/impl/ConcurrentParallelNodeImpl.java`:
+创建 `behavior-tree-core/src/main/java/com/lee9213/behavior/node/impl/ConcurrentParallelNodeImpl.java`：
 
 ```java
 package com.lee9213.behavior.node.impl;
@@ -385,9 +385,9 @@ public final class ConcurrentParallelNodeImpl<Result extends NodeResult, Context
 }
 ```
 
-- [ ] **Step 4: Add factory method on `BehaviorNodeWrapper`**
+- [ ] **步骤 4：在 `BehaviorNodeWrapper` 上增加工厂方法**
 
-In `BehaviorNodeWrapper.java`, add:
+在 `BehaviorNodeWrapper.java` 中增加：
 
 ```java
 import java.util.concurrent.Executor;
@@ -400,9 +400,9 @@ public BehaviorNodeWrapper<Result, Context> buildConcurrentParallelNode(
 }
 ```
 
-- [ ] **Step 5: Write failing test `ConcurrentParallelNodeImplTest`**
+- [ ] **步骤 5：编写失败用例先行测试 `ConcurrentParallelNodeImplTest`**
 
-Create `behavior-tree-core/src/test/java/com/lee9213/behavior/node/impl/ConcurrentParallelNodeImplTest.java`:
+创建 `behavior-tree-core/src/test/java/com/lee9213/behavior/node/impl/ConcurrentParallelNodeImplTest.java`：
 
 ```java
 package com.lee9213.behavior.node.impl;
@@ -458,15 +458,15 @@ class ConcurrentParallelNodeImplTest {
 }
 ```
 
-- [ ] **Step 6: Run test**
+- [ ] **步骤 6：运行测试**
 
 ```bash
 mvn -pl behavior-tree-core -Dtest=ConcurrentParallelNodeImplTest test
 ```
 
-Expected: PASS after fixing compilation and test doubles.
+期望：编译与测试替身修正后 **通过**。
 
-- [ ] **Step 7: Commit**
+- [ ] **步骤 7：提交**
 
 ```bash
 git add behavior-tree-core behavior-tree-engine/pom.xml
@@ -475,15 +475,15 @@ git commit -m "feat(core): concurrent parallel node and FlowExecutionContext"
 
 ---
 
-### Task 3: `FlowDefinition`, structural validation, acyclic execution graph check
+### 任务 3：`FlowDefinition`、结构校验、执行图无环检查
 
-**Files:**
+**涉及文件：**
 
-- Create: `behavior-tree-engine/src/main/java/com/lee9213/behavior/engine/FlowDefinition.java`
-- Create: `behavior-tree-engine/src/main/java/com/lee9213/behavior/engine/validation/FlowDefinitionValidator.java`
-- Create: `behavior-tree-engine/src/main/java/com/lee9213/behavior/engine/validation/InvalidFlowDefinitionException.java`
+- 新建：`behavior-tree-engine/src/main/java/com/lee9213/behavior/engine/FlowDefinition.java`
+- 新建：`behavior-tree-engine/src/main/java/com/lee9213/behavior/engine/validation/FlowDefinitionValidator.java`
+- 新建：`behavior-tree-engine/src/main/java/com/lee9213/behavior/engine/validation/InvalidFlowDefinitionException.java`
 
-- [ ] **Step 1: `FlowDefinition`**
+- [ ] **步骤 1：`FlowDefinition`**
 
 ```java
 package com.lee9213.behavior.engine;
@@ -503,15 +503,15 @@ public final class FlowDefinition {
 }
 ```
 
-- [ ] **Step 2: Validator — structure + DAG sanity**
+- [ ] **步骤 2：校验器 — 结构 + DAG 合理性**
 
-`FlowDefinitionValidator.validate(FlowDefinition def)`:
+`FlowDefinitionValidator.validate(FlowDefinition def)`：
 
-- `id` / `version` non-blank
-- `behaviorTree.getRootNode()` non-null
-- Build a graph: each `BehaviorNodeWrapper` gets a synthetic id (BFS index path); edges parent→child; run **Kahn topological** or **DFS visited**—for a **tree** there are no back-edges; still implement `detectCycle(List<Edge>)` using standard **DFS coloring** on the directed graph built from the tree. If cycle found → `InvalidFlowDefinitionException` (should not happen for pure tree).
+- `id` / `version` 非空
+- `behaviorTree.getRootNode()` 非 null
+- 构图：每个 `BehaviorNodeWrapper` 赋予合成 id（BFS 路径）；边为 parent→child；对**树**而言无回边；仍实现基于 **DFS 三色** 或 **Kahn** 的 `hasCycle`（在由树构建的有向图上）。若发现环 → `InvalidFlowDefinitionException`（纯树下理论上不应出现）。
 
-Graph builder sketch (pseudocode in real Java in file):
+图中建边示意（在实现文件中写完整 Java，勿留伪代码）：
 
 ```java
 void validateAcyclic(BehaviorNodeWrapper<?, ?> root) {
@@ -523,13 +523,13 @@ void validateAcyclic(BehaviorNodeWrapper<?, ?> root) {
 }
 ```
 
-- [ ] **Step 3: Unit test `FlowDefinitionValidatorTest`**
+- [ ] **步骤 3：单元测试 `FlowDefinitionValidatorTest`**
 
-Assert valid tree passes; for cycle case, **synthesize** a malformed adjacency in a package-private test double **or** skip impossible case and test validator only on blank id.
+合法树应通过；环场景可用包内测试替身构造畸形邻接表，或仅测 **空 id 失败** 等最小用例。
 
-Minimum: **test blank id fails**.
+最低限度：**空 id 必须失败**。
 
-- [ ] **Step 4: Run + commit**
+- [ ] **步骤 4：运行并提交**
 
 ```bash
 mvn -pl behavior-tree-engine test
@@ -539,17 +539,17 @@ git commit -m "feat(engine): FlowDefinition and validator"
 
 ---
 
-### Task 4: Retry policies + engine-level toggle
+### 任务 4：重试策略 + 引擎级开关
 
-**Files:**
+**涉及文件：**
 
-- Create: `behavior-tree-engine/.../retry/RetryPolicy.java`
-- Create: `behavior-tree-engine/.../retry/RetryPolicyRegistry.java`
-- Create: `behavior-tree-engine/.../retry/RetryExecutor.java`
-- Create: `behavior-tree-engine/.../FlowEngineConfig.java`
-- Modify: `behavior-tree-core/.../BehaviorNodeWrapper.java` — add optional `String stepTag` field + accessor (used by engine to resolve policy)
+- 新建：`behavior-tree-engine/.../retry/RetryPolicy.java`
+- 新建：`behavior-tree-engine/.../retry/RetryPolicyRegistry.java`
+- 新建：`behavior-tree-engine/.../retry/RetryExecutor.java`
+- 新建：`behavior-tree-engine/.../FlowEngineConfig.java`
+- 修改：`behavior-tree-core/.../BehaviorNodeWrapper.java` — 增加可选字段 `String stepTag` 及访问器（供引擎解析策略）
 
-- [ ] **Step 1: `RetryPolicy` record**
+- [ ] **步骤 1：`RetryPolicy` record**
 
 ```java
 package com.lee9213.behavior.engine.retry;
@@ -558,7 +558,7 @@ public record RetryPolicy(
         int maxAttempts,
         long baseDelayMillis,
         double multiplier,
-        double jitterRatio // 0..1 relative to computed delay
+        double jitterRatio // 相对当前 delay，0..1
 ) {
     public RetryPolicy {
         if (maxAttempts < 1) throw new IllegalArgumentException("maxAttempts");
@@ -567,7 +567,7 @@ public record RetryPolicy(
 }
 ```
 
-- [ ] **Step 2: `RetryPolicyRegistry`**
+- [ ] **步骤 2：`RetryPolicyRegistry`**
 
 ```java
 package com.lee9213.behavior.engine.retry;
@@ -597,7 +597,7 @@ public final class RetryPolicyRegistry {
 }
 ```
 
-- [ ] **Step 3: `RetryExecutor` with backoff + jitter**
+- [ ] **步骤 3：带退避 + 抖动的 `RetryExecutor`**
 
 ```java
 package com.lee9213.behavior.engine.retry;
@@ -641,7 +641,7 @@ public final class RetryExecutor {
 }
 ```
 
-- [ ] **Step 4: `FlowEngineConfig`**
+- [ ] **步骤 4：`FlowEngineConfig`**
 
 ```java
 package com.lee9213.behavior.engine;
@@ -671,9 +671,9 @@ public final class FlowEngineConfig {
 }
 ```
 
-Wire `RetryExecutor` in Task 5 when executing tagged leaf nodes.
+在任务 5 执行带 tag 的叶子节点时接入 `RetryExecutor`。
 
-- [ ] **Step 5: Add `stepTag` to `BehaviorNodeWrapper`**
+- [ ] **步骤 5：为 `BehaviorNodeWrapper` 增加 `stepTag`**
 
 ```java
 private String stepTag;
@@ -682,11 +682,11 @@ public String getStepTag() { return stepTag; }
 public void setStepTag(String stepTag) { this.stepTag = stepTag; }
 ```
 
-- [ ] **Step 6: Test retry toggle**
+- [ ] **步骤 6：测试重试开关**
 
-In `behavior-tree-engine`, test that when `retryEnabled=false`, `RetryExecutor` runs exactly once (use a throwing attempt + counter).
+在 `behavior-tree-engine` 中验证：`retryEnabled=false` 时 `RetryExecutor` **只执行一次**（抛错尝试 + 计数器）。
 
-- [ ] **Step 7: Commit**
+- [ ] **步骤 7：提交**
 
 ```bash
 git commit -am "feat(engine): retry policies and engine-level retry toggle"
@@ -694,17 +694,17 @@ git commit -am "feat(engine): retry policies and engine-level retry toggle"
 
 ---
 
-### Task 5: `FlowInstanceSnapshot`, `ProcessInstanceStore`, `FlowEngine.run`
+### 任务 5：`FlowInstanceSnapshot`、`ProcessInstanceStore`、`FlowEngine.run`
 
-**Files:**
+**涉及文件：**
 
-- Create: `behavior-tree-engine/.../FlowInstanceSnapshot.java`
-- Create: `behavior-tree-engine/.../store/ProcessInstanceStore.java`
-- Create: `behavior-tree-engine/.../store/InMemoryProcessInstanceStore.java`
-- Create: `behavior-tree-engine/.../store/StoreException.java`
-- Create: `behavior-tree-engine/.../FlowEngine.java`
+- 新建：`behavior-tree-engine/.../FlowInstanceSnapshot.java`
+- 新建：`behavior-tree-engine/.../store/ProcessInstanceStore.java`
+- 新建：`behavior-tree-engine/.../store/InMemoryProcessInstanceStore.java`
+- 新建：`behavior-tree-engine/.../store/StoreException.java`
+- 新建：`behavior-tree-engine/.../FlowEngine.java`
 
-- [ ] **Step 1: Snapshot**
+- [ ] **步骤 1：快照**
 
 ```java
 package com.lee9213.behavior.engine;
@@ -725,7 +725,7 @@ public class FlowInstanceSnapshot implements Serializable {
 }
 ```
 
-- [ ] **Step 2: Store interface**
+- [ ] **步骤 2：存储接口**
 
 ```java
 package com.lee9213.behavior.engine.store;
@@ -741,11 +741,11 @@ public interface ProcessInstanceStore {
 }
 ```
 
-- [ ] **Step 3: In-memory implementation**
+- [ ] **步骤 3：内存实现**
 
-`ConcurrentHashMap<String, FlowInstanceSnapshot>` — throws `StoreException` only if you choose to simulate failures in tests.
+`ConcurrentHashMap<String, FlowInstanceSnapshot>` — 仅在测试中模拟失败时才抛出 `StoreException`。
 
-- [ ] **Step 4: `FlowEngine` minimal synchronous `run`**
+- [ ] **步骤 4：最小同步 `run` 的 `FlowEngine`**
 
 ```java
 package com.lee9213.behavior.engine;
@@ -793,15 +793,15 @@ public final class FlowEngine {
 }
 ```
 
-**Note:** Add `setFlowInstanceId` on `FlowExecutionContext` if not present; field already in Task 2 class.
+**说明：** `FlowExecutionContext` 上需有 `setFlowInstanceId`（任务 2 已用 Lombok `@Setter` 覆盖）。
 
-**Note:** Integrate `ConcurrentParallelNodeImpl` by building trees that use `buildConcurrentParallelNode` with `config.getParallelExecutor()`—that wiring belongs in **factory** code paths (parser or manual tests), not inside `FlowEngine` unless you add a **tree visitor** to replace parallel nodes—**YAGNI for v1**: document that **engine-managed parallel** requires building the tree with `buildConcurrentParallelNode` + executor from config. Optional follow-up task: `FlowDefinitionBuilder` helper.
+**说明：** 将 `ConcurrentParallelNodeImpl` 接入需在**构建树**时使用 `buildConcurrentParallelNode` + `config.getParallelExecutor()`；该接线在**工厂/解析**或手工测试中完成，不必在 `FlowEngine` 内做 visitor 替换—**v1 YAGNI**：文档约定「由引擎管理的并行」须用 `buildConcurrentParallelNode` + 配置中的 executor。可选后续：`FlowDefinitionBuilder` 辅助类。
 
-- [ ] **Step 5: Test `FlowEngine` + store called**
+- [ ] **步骤 5：测试 `FlowEngine` 与 store 调用**
 
-JUnit: mock `ProcessInstanceStore` with Mockito or simple recording impl counting `save` invocations (implement inline class in test).
+JUnit：Mockito mock `ProcessInstanceStore`，或内联记录 `save` 调用次数的实现类。
 
-- [ ] **Step 6: Commit**
+- [ ] **步骤 6：提交**
 
 ```bash
 git add behavior-tree-engine
@@ -810,24 +810,24 @@ git commit -m "feat(engine): FlowEngine synchronous run and instance store"
 
 ---
 
-### Task 6: Redis-backed `ProcessInstanceStore` (engine or starter)
+### 任务 6：基于 Redis 的 `ProcessInstanceStore`（放在 engine 或 starter）
 
-**Files:**
+**涉及文件：**
 
-- Create: `behavior-tree-spring-boot-starter/src/main/java/com/lee9213/behavior/spring/redis/RedisProcessInstanceStore.java`
-- Modify: `behavior-tree-spring-boot-starter/pom.xml` — `spring-boot-starter-data-redis`, `jackson-databind`
+- 新建：`behavior-tree-spring-boot-starter/src/main/java/com/lee9213/behavior/spring/redis/RedisProcessInstanceStore.java`
+- 修改：`behavior-tree-spring-boot-starter/pom.xml` — 增加 `spring-boot-starter-data-redis`、`jackson-databind`
 
-Implement `ProcessInstanceStore` using `StringRedisTemplate`, key pattern `flow:instance:{instanceId}`, value = JSON from `FlowInstanceSnapshot`.
+使用 `StringRedisTemplate` 实现 `ProcessInstanceStore`，key 形如 `flow:instance:{instanceId}`，value 为 `FlowInstanceSnapshot` 的 JSON。
 
-- [ ] **Step 1: Implement class**
+- [ ] **步骤 1：实现类**
 
-Use `ObjectMapper.writeValueAsString` / `readValue` with `StoreException` wrapping `JsonProcessingException`.
+使用 `ObjectMapper.writeValueAsString` / `readValue`，将 `JsonProcessingException` 包装为 `StoreException`。
 
-- [ ] **Step 2: Integration test (optional profile)**
+- [ ] **步骤 2：集成测试（可选 profile）**
 
-`@SpringBootTest` + Testcontainers Redis **or** skip CI and document manual run.
+`@SpringBootTest` + Testcontainers Redis，**或** CI 跳过并在文档中说明手工验证。
 
-- [ ] **Step 3: Commit**
+- [ ] **步骤 3：提交**
 
 ```bash
 git add behavior-tree-spring-boot-starter
@@ -836,34 +836,34 @@ git commit -m "feat(starter): Redis ProcessInstanceStore"
 
 ---
 
-### Task 7: Spring Boot auto-configuration
+### 任务 7：Spring Boot 自动配置
 
-**Files:**
+**涉及文件：**
 
-- Create: `behavior-tree-spring-boot-starter/src/main/resources/META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports`
-- Create: `behavior-tree-spring-boot-starter/.../BehaviorFlowAutoConfiguration.java`
+- 新建：`behavior-tree-spring-boot-starter/src/main/resources/META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports`
+- 新建：`behavior-tree-spring-boot-starter/.../BehaviorFlowAutoConfiguration.java`
 
-Beans:
+Bean：
 
-- `@Bean FlowEngineConfig` — bind `behavior.flow.retry-enabled` (default true)
+- `@Bean FlowEngineConfig` — 绑定 `behavior.flow.retry-enabled`（默认 true）
 - `@Bean FlowEngine`
-- `@Bean @ConditionalOnBean(StringRedisTemplate.class) ProcessInstanceStore redisStore(...)` — **do not** silently fall back; if Redis not configured, user must set `InMemoryProcessInstanceStore` explicitly or depend on core-only engine without starter auto-store.
+- `@Bean @ConditionalOnBean(StringRedisTemplate.class) ProcessInstanceStore redisStore(...)` — **禁止**静默降级；未配置 Redis 时，用户须显式配置 `InMemoryProcessInstanceStore`，或仅用无 starter 自动存储的 engine。
 
-- [ ] **Step 1: `BehaviorFlowAutoConfiguration`**
+- [ ] **步骤 1：`BehaviorFlowAutoConfiguration`**
 
-Provide Java configuration with `@EnableConfigurationProperties(FlowEngineProperties.class)`.
+提供 Java 配置类，并 `@EnableConfigurationProperties(FlowEngineProperties.class)`。
 
-- [ ] **Step 2: Properties class**
+- [ ] **步骤 2：配置属性类**
 
 ```java
 @ConfigurationProperties(prefix = "behavior.flow")
 public class FlowEngineProperties {
     private boolean retryEnabled = true;
-    // getters/setters
+    // getter / setter
 }
 ```
 
-- [ ] **Step 3: Commit**
+- [ ] **步骤 3：提交**
 
 ```bash
 git commit -am "feat(starter): BehaviorFlowAutoConfiguration"
@@ -871,48 +871,48 @@ git commit -am "feat(starter): BehaviorFlowAutoConfiguration"
 
 ---
 
-### Task 8: End-to-end unit tests (engine module)
+### 任务 8：端到端单元测试（engine 模块）
 
-**Files:**
+**文件：**
 
 - `behavior-tree-engine/src/test/java/com/lee9213/behavior/engine/RetryExecutorTest.java`
 - `behavior-tree-engine/src/test/java/com/lee9213/behavior/engine/FlowEngineStoreTest.java`
 - `behavior-tree-engine/src/test/java/com/lee9213/behavior/engine/FlowDefinitionValidatorTest.java`
 
-Each test class: 2–3 cases with assertions; run:
+每个测试类 2～3 个用例；执行：
 
 ```bash
 mvn -pl behavior-tree-engine test
 ```
 
-Expected: all pass.
+期望：全部通过。
 
 ---
 
-## Self-review (plan vs spec)
+## 自检（计划 vs 规格）
 
-1. **Spec coverage:** All §§2–7 addressed by Tasks 2–8; optional Redis integration test marked optional per spec §7.
-2. **Placeholder scan:** No TBD steps; parallel/context dependency resolved by placing `FlowExecutionContext` in **core** under `com.lee9213.behavior.flow`.
-3. **Consistency:** `FlowEngineConfig.retryEnabled` matches `RetryExecutor`; `StoreException` used for fail-closed behavior; no silent Redis→memory fallback in auto-config (explicit beans only).
+1. **规格覆盖：** §§2–7 由任务 2–8 覆盖；Redis 集成测试按规格 §7 标为可选。
+2. **占位符：** 无 TBD 步骤；并行/上下文依赖通过将 `FlowExecutionContext` 放在 **core** 的 `com.lee9213.behavior.flow` 解决。
+3. **一致性：** `FlowEngineConfig.retryEnabled` 与 `RetryExecutor` 一致；`StoreException` 表达 fail-closed；自动配置中无 Redis→内存静默降级（仅显式 Bean）。
 
-**Gap explicitly deferred:** Wrapping **every** leaf `execute` with `RetryExecutor` requires either decorating `INode` instances or a **proxy** around `BehaviorNodeWrapper.getNode().execute` inside a new `RetryingActionNode`—add **Task 9** if you need automatic retry without manual wrapping:
+**明确推迟的缺口：** 若需对**每个**叶子 `execute` 自动套 `RetryExecutor`，要么装饰 `INode`，要么在 `BehaviorNodeWrapper.getNode().execute` 外包一层代理或新增 `RetryingActionNode`—需要时在 **任务 9** 补充。
 
-### Task 9 (optional): `RetryingINodeDecorator`
+### 任务 9（可选）：`RetryingINodeDecorator`
 
-**Files:**
+**文件：**
 
-- Create: `behavior-tree-engine/.../retry/RetryingINodeDecorator.java` implementing `INode` delegating to delegate with `RetryExecutor.execute(config.isRetryEnabled(), policy, delegate::execute)`.
+- 新建：`behavior-tree-engine/.../retry/RetryingINodeDecorator.java`，实现 `INode`，委托给内层节点，并在 `RetryExecutor.execute(config.isRetryEnabled(), policy, delegate::execute)` 中调用。
 
-**Integration:** Applied only when building wrappers in factory—document in README.
+**接入：** 仅在工厂构建包装器时应用—在 README 中说明。
 
 ---
 
-## Execution handoff
+## 执行交接
 
-Plan complete and saved to `docs/superpowers/plans/2026-04-11-behavior-flow-engine.md`. Two execution options:
+计划已保存至 `docs/superpowers/plans/2026-04-11-behavior-flow-engine.md`。两种执行方式：
 
-1. **Subagent-Driven (recommended)** — Dispatch a fresh subagent per task, review between tasks, fast iteration. **REQUIRED SUB-SKILL:** superpowers:subagent-driven-development.
+1. **子代理驱动（推荐）** — 每任务新开子代理，任务间评审，迭代快。**必须子技能：** superpowers:subagent-driven-development。
 
-2. **Inline Execution** — Execute tasks in this session using superpowers:executing-plans with batch checkpoints.
+2. **本会话内联执行** — 使用 superpowers:executing-plans，分批检查点执行。
 
-**Which approach?**
+**请选择其一。**

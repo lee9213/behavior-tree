@@ -12,6 +12,11 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 
+/**
+ * Parallel control node: submits each child to the given {@link Executor} and joins all completions
+ * (failures do not cancel siblings). For thread-safe context isolation, use {@link FlowExecutionContext};
+ * with a plain {@link BaseContext}, the same instance may be shared across threads — avoid unless immutable.
+ */
 @Log4j2
 public final class ConcurrentParallelNodeImpl<Result extends NodeResult, Context extends BaseContext>
         extends AbstractControlNode<Result, Context> implements IParallelNode<Result, Context> {

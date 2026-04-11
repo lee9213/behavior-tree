@@ -21,6 +21,9 @@ public final class RetryExecutor {
         while (attemptNo < policy.maxAttempts()) {
             try {
                 return attempt.run();
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                throw e;
             } catch (Exception ex) {
                 last = ex;
                 attemptNo++;
@@ -28,7 +31,12 @@ public final class RetryExecutor {
                     break;
                 }
                 long jitter = (long) (delay * policy.jitterRatio() * ThreadLocalRandom.current().nextDouble());
-                Thread.sleep(delay + jitter);
+                try {
+                    Thread.sleep(delay + jitter);
+                } catch (InterruptedException ie) {
+                    Thread.currentThread().interrupt();
+                    throw ie;
+                }
                 delay = (long) (delay * policy.multiplier());
             }
         }

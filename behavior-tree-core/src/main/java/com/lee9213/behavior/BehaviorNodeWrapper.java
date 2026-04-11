@@ -3,6 +3,7 @@ package com.lee9213.behavior;
 import com.lee9213.behavior.exception.BehaviorNodeNotFoundException;
 import com.lee9213.behavior.node.INode;
 import com.lee9213.behavior.node.impl.*;
+import lombok.AccessLevel;
 import lombok.Getter;
 
 import java.util.List;
@@ -17,6 +18,8 @@ import java.util.concurrent.Executor;
 public class BehaviorNodeWrapper<Result extends NodeResult, Context extends BaseContext> {
     private String nodeName;
     private INode<Result, Context> node;
+    @Getter(AccessLevel.NONE)
+    private String stepTag;
 
     public BehaviorNodeWrapper() { }
     public BehaviorNodeWrapper(String nodeName, INode<Result, Context> node) {
@@ -62,5 +65,13 @@ public class BehaviorNodeWrapper<Result extends NodeResult, Context extends Base
             throw new BehaviorNodeNotFoundException("节点不存在");
         }
         return node;
+    }
+
+    public String getStepTag() {
+        return stepTag;
+    }
+
+    public void setStepTag(String stepTag) {
+        this.stepTag = stepTag;
     }
 }

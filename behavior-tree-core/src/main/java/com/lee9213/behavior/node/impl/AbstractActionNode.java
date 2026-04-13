@@ -1,10 +1,11 @@
 package com.lee9213.behavior.node.impl;
 
+import java.util.concurrent.ThreadLocalRandom;
+
 import com.lee9213.behavior.NodeResult;
 import com.lee9213.behavior.exception.BehaviorNodeExecuteException;
 import com.lee9213.behavior.flow.FlowExecutionContext;
 import com.lee9213.behavior.node.IActionNode;
-import com.lee9213.behavior.retry.RetryExecutor;
 import com.lee9213.behavior.retry.RetryPolicy;
 
 /**
@@ -24,7 +25,39 @@ public abstract class AbstractActionNode implements IActionNode<NodeResult, Flow
     @Override
     public NodeResult execute(FlowExecutionContext context) {
         try {
-            return RetryExecutor.execute(retryEnabled, retryPolicy, () -> doExecute(context));
+            // return RetryExecutor.execute(retryEnabled, retryPolicy, () -> doExecute(context));
+            if (!retryEnabled) {
+                return doExecute(context);
+            }
+            int attemptNo = 0;
+            long delay = retryPolicy.baseDelayMillis();
+            Exception last = null;
+            while (attemptNo < retryPolicy.maxAttempts()) {
+                try {
+                    return doExecute(context);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    throw e;
+                } catch (Exception ex) {
+                    last = ex;
+                    attemptNo++;
+                    if (attemptNo >= retryPolicy.maxAttempts()) {
+                        break;
+                    }
+                    long jitter = (long) (delay * retryPolicy.jitterRatio() * ThreadLocalRandom.current().nextDouble());
+                    try {
+                        Thread.sleep(delay + jitter);
+                    } catch (InterruptedException ie) {
+                        Thread.currentThread().interrupt();
+                        throw ie;
+                    }
+                    delay = (long) (delay * retryPolicy.multiplier());
+                }
+            }
+            if (last != null) {
+                throw last;
+            }
+            throw new IllegalStateException("retry without exception");
         } catch (RuntimeException e) {
             throw e;
         } catch (Exception e) {

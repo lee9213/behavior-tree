@@ -1,5 +1,6 @@
 package com.lee9213.behavior;
 
+import com.lee9213.behavior.node.INode;
 import lombok.Data;
 
 /**
@@ -8,14 +9,14 @@ import lombok.Data;
  */
 @Data
 public class BehaviorTree<Result extends NodeResult, Context extends BaseContext> {
-    private BehaviorNodeWrapper<Result, Context> rootNode;
+    private INode<Result, Context> rootNode;
     public BehaviorTree() { }
-    public BehaviorTree(BehaviorNodeWrapper<Result, Context> rootNode) {
+    public BehaviorTree(INode<Result, Context> rootNode) {
         this.rootNode = rootNode;
     }
 
     public Result execute(Context context) {
         context.setCurrentNode(rootNode);
-        return rootNode.getNode().execute(context);
+        return rootNode.execute(context);
     }
 }

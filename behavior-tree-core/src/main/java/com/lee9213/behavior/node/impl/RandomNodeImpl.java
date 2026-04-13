@@ -1,8 +1,8 @@
 package com.lee9213.behavior.node.impl;
 
 import com.lee9213.behavior.BaseContext;
-import com.lee9213.behavior.BehaviorNodeWrapper;
 import com.lee9213.behavior.NodeResult;
+import com.lee9213.behavior.node.INode;
 import com.lee9213.behavior.node.IRandomNode;
 import lombok.extern.log4j.Log4j2;
 
@@ -18,18 +18,19 @@ import java.util.Random;
 @Log4j2
 public final class RandomNodeImpl<Result extends NodeResult,Context extends BaseContext> extends AbstractControlNode<Result, Context> implements IRandomNode<Result, Context> {
 
-    public RandomNodeImpl(List<BehaviorNodeWrapper<Result, Context>> childNodeList) {
+    public RandomNodeImpl(String nodeName, List<INode<Result, Context>> childNodeList) {
+        super(nodeName);
         this.childNodeList = childNodeList;
     }
 
     @Override
     public Result execute(Context context) {
         int index = new Random().nextInt(childNodeList.size());
-        BehaviorNodeWrapper<Result, Context> behaviorNodeWrapper = childNodeList.get(index);
-        context.setCurrentNode(behaviorNodeWrapper);
-        Result nodeResult = behaviorNodeWrapper.getNode().execute(context);
+        INode<Result, Context> node = childNodeList.get(index);
+        context.setCurrentNode(node);
+        Result nodeResult = node.execute(context);
         checkNodeResult(nodeResult);
-        log.info("节点{}执行结果：{}。", behaviorNodeWrapper.getNodeName(), nodeResult);
+        log.info("节点{}执行结果：{}。", node.getNodeName(), nodeResult);
         return nodeResult;
     }
 }

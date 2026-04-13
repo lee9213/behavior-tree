@@ -1,8 +1,8 @@
 package com.lee9213.behavior.node.impl;
 
 import com.lee9213.behavior.BaseContext;
-import com.lee9213.behavior.BehaviorNodeWrapper;
 import com.lee9213.behavior.NodeResult;
+import com.lee9213.behavior.node.INode;
 import com.lee9213.behavior.node.ISelectorNode;
 import lombok.extern.log4j.Log4j2;
 
@@ -17,22 +17,23 @@ import java.util.List;
 @Log4j2
 public final class SelectorNodeImpl<Result extends NodeResult,Context extends BaseContext> extends AbstractControlNode<Result, Context> implements ISelectorNode<Result, Context> {
 
-    public SelectorNodeImpl(List<BehaviorNodeWrapper<Result, Context>> childNodeList) {
+    public SelectorNodeImpl(String nodeName, List<INode<Result, Context>> childNodeList) {
+        super(nodeName);
         this.childNodeList = childNodeList;
     }
 
     @Override
     public Result execute(Context context) {
-        for (BehaviorNodeWrapper<Result, Context> behaviorNodeWrapper : childNodeList) {
-            context.setCurrentNode(behaviorNodeWrapper);
-            Result nodeResult = behaviorNodeWrapper.getNode().execute(context);
+        for (INode<Result, Context> node : childNodeList) {
+            context.setCurrentNode(node);
+            Result nodeResult = node.execute(context);
             checkNodeResult(nodeResult);
             // 如果任何一个节点执行成功，则返回成功
             if (nodeResult.isSuccess()) {
-                log.info("节点{}执行结果：{}", behaviorNodeWrapper.getNodeName(), nodeResult);
+                log.info("节点{}执行结果：{}", node.getNodeName(), nodeResult);
                 return nodeResult;
             }
-            log.info("节点{}执行结果：{}", behaviorNodeWrapper.getNodeName(), nodeResult);
+            log.info("节点{}执行结果：{}", node.getNodeName(), nodeResult);
         }
         // 如果所有节点都执行失败，则返回失败
         return (Result) NodeResult.FAILURE;

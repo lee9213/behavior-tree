@@ -1,10 +1,10 @@
 package com.lee9213.behavior.node.impl;
 
 import com.lee9213.behavior.BaseContext;
-import com.lee9213.behavior.BehaviorNodeWrapper;
 import com.lee9213.behavior.NodeResult;
 import com.lee9213.behavior.exception.BehaviorNodeExecuteException;
 import com.lee9213.behavior.node.IDecoratorNode;
+import com.lee9213.behavior.node.INode;
 import lombok.extern.log4j.Log4j2;
 
 import java.util.Map;
@@ -18,34 +18,52 @@ import java.util.Map;
 @Log4j2
 public final class StrategyNodeImpl<Result extends NodeResult,Context extends BaseContext> implements IDecoratorNode<Result, Context> {
 
-    private BehaviorNodeWrapper<Result, Context> conditionNode;
-    private Map<Result, BehaviorNodeWrapper<Result, Context>> strategyMap;
+    private INode<Result, Context> conditionNode;
+    private Map<Result, INode<Result, Context>> strategyMap;
+    private String nodeName;
+    private String stepTag;
 
-    public StrategyNodeImpl(BehaviorNodeWrapper<Result, Context> conditionNode, Map<Result, BehaviorNodeWrapper<Result, Context>> strategyMap) {
+    public StrategyNodeImpl(String nodeName, INode<Result, Context> conditionNode, Map<Result, INode<Result, Context>> strategyMap) {
+        this.nodeName = nodeName;
         this.conditionNode = conditionNode;
         this.strategyMap = strategyMap;
     }
 
-    public BehaviorNodeWrapper<Result, Context> getConditionWrapper() {
+    public INode<Result, Context> getConditionNode() {
         return conditionNode;
     }
 
-    public Map<Result, BehaviorNodeWrapper<Result, Context>> getStrategyMap() {
+    public Map<Result, INode<Result, Context>> getStrategyMap() {
         return strategyMap;
     }
 
     @Override
     public Result execute(Context context) {
         context.setCurrentNode(conditionNode);
-        Result nodeResult = conditionNode.getNode().execute(context);
+        Result nodeResult = conditionNode.execute(context);
         log.info("节点{}执行结果：{}。", conditionNode.getNodeName(), nodeResult);
         checkNodeResult(nodeResult);
-        BehaviorNodeWrapper<Result, Context> behaviorNodeWrapper = strategyMap.get(nodeResult);
-        context.setCurrentNode(behaviorNodeWrapper);
-        nodeResult = behaviorNodeWrapper.getNode().execute(context);
-        log.info("节点{}执行结果：{}。", behaviorNodeWrapper.getNodeName(), nodeResult);
+        INode<Result, Context> node = strategyMap.get(nodeResult);
+        context.setCurrentNode(node);
+        nodeResult = node.execute(context);
+        log.info("节点{}执行结果：{}。", node.getNodeName(), nodeResult);
         checkNodeResult(nodeResult);
         return nodeResult;
+    }
+
+    @Override
+    public String getNodeName() {
+        return nodeName;
+    }
+
+    @Override
+    public String getStepTag() {
+        return stepTag;
+    }
+
+    @Override
+    public void setStepTag(String stepTag) {
+        this.stepTag = stepTag;
     }
 
     public void checkNodeResult(Result nodeResult) {

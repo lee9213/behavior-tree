@@ -1,10 +1,10 @@
 package com.lee9213.behavior.node.impl;
 
 import com.lee9213.behavior.BaseContext;
-import com.lee9213.behavior.BehaviorNodeWrapper;
 import com.lee9213.behavior.NodeResult;
 import com.lee9213.behavior.flow.FlowExecutionContext;
 import com.lee9213.behavior.node.IParallelNode;
+import com.lee9213.behavior.node.INode;
 import lombok.extern.log4j.Log4j2;
 
 import java.util.ArrayList;
@@ -24,11 +24,12 @@ public final class ParallelNodeImpl<Result extends NodeResult, Context extends B
 
     private final Executor executor;
 
-    public ParallelNodeImpl(List<BehaviorNodeWrapper<Result, Context>> childNodeList) {
-        this(childNodeList, null);
+    public ParallelNodeImpl(String nodeName, List<INode<Result, Context>> childNodeList) {
+        this(nodeName, childNodeList, null);
     }
 
-    public ParallelNodeImpl(List<BehaviorNodeWrapper<Result, Context>> childNodeList, Executor executor) {
+    public ParallelNodeImpl(String nodeName, List<INode<Result, Context>> childNodeList, Executor executor) {
+        super(nodeName);
         this.childNodeList = childNodeList;
         this.executor = executor;
     }
@@ -46,30 +47,30 @@ public final class ParallelNodeImpl<Result extends NodeResult, Context extends B
 
     private Result executeSequential(Context context) {
         boolean isSuccess = true;
-        for (BehaviorNodeWrapper<Result, Context> behaviorNodeWrapper : childNodeList) {
-            context.setCurrentNode(behaviorNodeWrapper);
-            Result nodeResult = behaviorNodeWrapper.getNode().execute(context);
+        for (INode<Result, Context> node : childNodeList) {
+            context.setCurrentNode(node);
+            Result nodeResult = node.execute(context);
             checkNodeResult(nodeResult);
             if (!nodeResult.isSuccess()) {
                 isSuccess = false;
             }
-            log.info("节点{}执行结果：{}", behaviorNodeWrapper.getNodeName(), nodeResult);
+            log.info("节点{}执行结果：{}", node.getNodeName(), nodeResult);
         }
         return (Result) (isSuccess ? NodeResult.SUCCESS : NodeResult.FAILURE);
     }
 
     private Result executeConcurrent(Context context) {
         List<CompletableFuture<Result>> futures = new ArrayList<>();
-        for (BehaviorNodeWrapper<Result, Context> wrapper : childNodeList) {
-            final BehaviorNodeWrapper<Result, Context> w = wrapper;
+        for (INode<Result, Context> node : childNodeList) {
+            final INode<Result, Context> n = node;
             Context branchContext = context;
             if (context instanceof FlowExecutionContext) {
                 branchContext = (Context) ((FlowExecutionContext) context).copyForParallelBranch();
             }
             Context bc = branchContext;
             CompletableFuture<Result> future = CompletableFuture.supplyAsync(() -> {
-                bc.setCurrentNode(w);
-                return w.getNode().execute(bc);
+                bc.setCurrentNode(n);
+                return n.execute(bc);
             }, executor);
             futures.add(future);
         }

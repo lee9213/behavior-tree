@@ -1,8 +1,8 @@
 package com.lee9213.behavior.node.impl;
 
 import com.lee9213.behavior.BaseContext;
-import com.lee9213.behavior.BehaviorNodeWrapper;
 import com.lee9213.behavior.NodeResult;
+import com.lee9213.behavior.node.INode;
 import com.lee9213.behavior.node.ISequenceNode;
 import lombok.extern.log4j.Log4j2;
 
@@ -16,20 +16,21 @@ import java.util.List;
  */
 @Log4j2
 public final class SequenceNodeImpl<Result extends NodeResult,Context extends BaseContext> extends AbstractControlNode<Result, Context> implements ISequenceNode<Result, Context> {
-    public SequenceNodeImpl(List<BehaviorNodeWrapper<Result, Context>> childNodeList) {
+    public SequenceNodeImpl(String nodeName, List<INode<Result, Context>> childNodeList) {
+        super(nodeName);
         this.childNodeList = childNodeList;
     }
     @Override
     public Result execute(Context context) {
-        for (BehaviorNodeWrapper<Result, Context> behaviorNodeWrapper : childNodeList) {
-            context.setCurrentNode(behaviorNodeWrapper);
-            Result nodeResult = behaviorNodeWrapper.getNode().execute(context);
+        for (INode<Result, Context> node : childNodeList) {
+            context.setCurrentNode(node);
+            Result nodeResult = node.execute(context);
             checkNodeResult(nodeResult);
             if (nodeResult.isSuccess()) {
-                log.info("节点{}执行结果：{}", behaviorNodeWrapper.getNodeName(), nodeResult);
+                log.info("节点{}执行结果：{}", node.getNodeName(), nodeResult);
                 continue;
             }
-            log.info("节点{}执行结果：{}，流程终止。", behaviorNodeWrapper.getNodeName(), nodeResult);
+            log.info("节点{}执行结果：{}，流程终止。", node.getNodeName(), nodeResult);
             // 如果有一个节点执行结果非成功，则直接返回执行结果
             return nodeResult;
         }

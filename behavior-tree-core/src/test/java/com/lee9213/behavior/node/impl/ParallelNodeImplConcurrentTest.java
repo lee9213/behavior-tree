@@ -1,9 +1,9 @@
 package com.lee9213.behavior.node.impl;
 
-import com.lee9213.behavior.BehaviorNodeWrapper;
 import com.lee9213.behavior.NodeResult;
 import com.lee9213.behavior.flow.FlowExecutionContext;
 import com.lee9213.behavior.node.INode;
+import com.lee9213.behavior.node.NodeFactory;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -19,26 +19,30 @@ class ParallelNodeImplConcurrentTest {
     void executor非空时在线程池上并发执行子节点并汇合() {
         ExecutorService pool = Executors.newFixedThreadPool(4);
         AtomicInteger counter = new AtomicInteger();
-        BehaviorNodeWrapper<NodeResult, FlowExecutionContext> leaf1 = leaf("a", counter);
-        BehaviorNodeWrapper<NodeResult, FlowExecutionContext> leaf2 = leaf("b", counter);
-        BehaviorNodeWrapper<NodeResult, FlowExecutionContext> parallel = new BehaviorNodeWrapper<NodeResult, FlowExecutionContext>()
-                .buildParallelNode("p", List.of(leaf1, leaf2), pool);
+        INode<NodeResult, FlowExecutionContext> leaf1 = leaf("a", counter);
+        INode<NodeResult, FlowExecutionContext> leaf2 = leaf("b", counter);
+        INode<NodeResult, FlowExecutionContext> parallel = NodeFactory.createParallelNode("p", List.of(leaf1, leaf2), pool);
 
         FlowExecutionContext ctx = new FlowExecutionContext();
-        NodeResult r = parallel.getNode().execute(ctx);
+        NodeResult r = parallel.execute(ctx);
         pool.shutdown();
         assertEquals(NodeResult.SUCCESS, r);
         assertEquals(2, counter.get());
     }
 
-    private static BehaviorNodeWrapper<NodeResult, FlowExecutionContext> leaf(String name, AtomicInteger counter) {
-        return new BehaviorNodeWrapper<>(name, new CountingLeaf(counter));
+    private static INode<NodeResult, FlowExecutionContext> leaf(String name, AtomicInteger counter) {
+        return NodeFactory.createActionNode(name, false, null, context -> {
+            counter.incrementAndGet();
+            return NodeResult.SUCCESS;
+        });
     }
 
     private static final class CountingLeaf implements INode<NodeResult, FlowExecutionContext> {
         private final AtomicInteger counter;
+        private final String nodeName;
 
-        private CountingLeaf(AtomicInteger counter) {
+        private CountingLeaf(String nodeName, AtomicInteger counter) {
+            this.nodeName = nodeName;
             this.counter = counter;
         }
 
@@ -46,6 +50,20 @@ class ParallelNodeImplConcurrentTest {
         public NodeResult execute(FlowExecutionContext context) {
             counter.incrementAndGet();
             return NodeResult.SUCCESS;
+        }
+
+        @Override
+        public String getNodeName() {
+            return nodeName;
+        }
+
+        @Override
+        public String getStepTag() {
+            return null;
+        }
+
+        @Override
+        public void setStepTag(String stepTag) {
         }
     }
 }

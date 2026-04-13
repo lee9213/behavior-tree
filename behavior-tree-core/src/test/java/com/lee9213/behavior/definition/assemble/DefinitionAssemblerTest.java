@@ -1,12 +1,12 @@
 package com.lee9213.behavior.definition.assemble;
 
 import com.lee9213.behavior.BaseContext;
-import com.lee9213.behavior.BehaviorNodeWrapper;
 import com.lee9213.behavior.NodeResult;
 import com.lee9213.behavior.TestContext;
 import com.lee9213.behavior.definition.ir.BehaviorDefinitionNode;
 import com.lee9213.behavior.definition.resolve.ReflectionActionNodeResolver;
 import com.lee9213.behavior.enums.NodeType;
+import com.lee9213.behavior.node.INode;
 import com.lee9213.behavior.node.impl.SuccessActionNodeImpl;
 import org.junit.jupiter.api.Test;
 
@@ -28,9 +28,9 @@ class DefinitionAssemblerTest {
                 null,
                 Map.of()
         );
-        BehaviorNodeWrapper<NodeResult, BaseContext> root =
+        INode<NodeResult, BaseContext> root =
                 DefinitionAssembler.assemble(def, NodeResult.class, new ReflectionActionNodeResolver());
         TestContext ctx = new TestContext();
-        assertEquals(NodeResult.SUCCESS, root.getNode().execute(ctx));
+        assertEquals(NodeResult.SUCCESS, root.execute(ctx));
     }
 }

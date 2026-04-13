@@ -4,6 +4,7 @@ import com.lee9213.behavior.definition.BehaviorTreeDefinitionLoader;
 import com.lee9213.behavior.definition.DefinitionFormat;
 import com.lee9213.behavior.definition.resolve.CompositeActionNodeResolver;
 import com.lee9213.behavior.definition.resolve.ReflectionActionNodeResolver;
+import com.lee9213.behavior.node.INode;
 import com.lee9213.behavior.spring.EnableBehavior;
 import com.lee9213.behavior.spring.SpringBeanActionNodeResolver;
 import org.junit.jupiter.api.Test;
@@ -31,7 +32,7 @@ public class BehaviorTreeTest {
                     new SpringBeanActionNodeResolver(),
                     new ReflectionActionNodeResolver());
             BehaviorTreeDefinitionLoader loader = new BehaviorTreeDefinitionLoader(resolver);
-            BehaviorNodeWrapper<TestNodeResult, BaseContext> root =
+            INode<TestNodeResult, BaseContext> root =
                     loader.parse(in, StandardCharsets.UTF_8, DefinitionFormat.JSON, TestNodeResult.class);
             TestContext testContext = new TestContext();
             BehaviorTree<TestNodeResult, BaseContext> behaviorTree = new BehaviorTree<>(root);

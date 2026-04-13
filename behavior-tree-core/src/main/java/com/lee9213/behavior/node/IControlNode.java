@@ -1,7 +1,6 @@
 package com.lee9213.behavior.node;
 
 import com.lee9213.behavior.BaseContext;
-import com.lee9213.behavior.BehaviorNodeWrapper;
 import com.lee9213.behavior.NodeResult;
 
 /**
@@ -18,5 +17,5 @@ public interface IControlNode<Result extends NodeResult,Context extends BaseCont
      * @param childNode 子节点
      * @return 当前节点
      */
-    BehaviorNodeWrapper<Result, Context> addChild(BehaviorNodeWrapper<Result, Context> childNode);
+    INode<Result, Context> addChild(INode<Result, Context> childNode);
 }

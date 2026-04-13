@@ -1,12 +1,12 @@
 package com.lee9213.behavior.definition.assemble;
 
 import com.lee9213.behavior.BaseContext;
-import com.lee9213.behavior.BehaviorNodeWrapper;
 import com.lee9213.behavior.NodeResult;
 import com.lee9213.behavior.definition.exception.DefinitionAssemblyException;
 import com.lee9213.behavior.definition.ir.BehaviorDefinitionNode;
 import com.lee9213.behavior.definition.resolve.ActionNodeResolver;
 import com.lee9213.behavior.enums.NodeType;
+import com.lee9213.behavior.node.INode;
 import com.lee9213.behavior.node.IActionNode;
 import com.lee9213.behavior.node.impl.ParallelNodeImpl;
 import com.lee9213.behavior.node.impl.RandomNodeImpl;
@@ -22,7 +22,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
- * IR → 运行时 {@link BehaviorNodeWrapper}。Parallel 首版不解析 executor，固定为 {@code null}。
+ * IR → 运行时 {@link INode}。Parallel 首版不解析 executor，固定为 {@code null}。
  * <p>
  * 上下文泛型统一为 {@link BaseContext}（定义加载阶段不携带具体 {@code Context} 类型形参）。
  */
@@ -32,7 +32,7 @@ public final class DefinitionAssembler {
     }
 
     @SuppressWarnings("unchecked")
-    public static <R extends NodeResult> BehaviorNodeWrapper<R, BaseContext> assemble(
+    public static <R extends NodeResult> INode<R, BaseContext> assemble(
             BehaviorDefinitionNode node,
             Class<R> resultClass,
             ActionNodeResolver resolver) {
@@ -50,64 +50,62 @@ public final class DefinitionAssembler {
         };
     }
 
-    private static <R extends NodeResult> BehaviorNodeWrapper<R, BaseContext> assembleAction(
+    private static <R extends NodeResult> INode<R, BaseContext> assembleAction(
             BehaviorDefinitionNode node,
             Class<R> resultClass,
             ActionNodeResolver resolver) {
-        IActionNode<R, BaseContext> action =
-                (IActionNode<R, BaseContext>) resolver.resolveAction(node, resultClass);
-        return new BehaviorNodeWrapper<>(node.nodeName(), action);
+        return (IActionNode<R, BaseContext>) resolver.resolveAction(node, resultClass);
     }
 
-    private static <R extends NodeResult> BehaviorNodeWrapper<R, BaseContext> assembleSequence(
+    private static <R extends NodeResult> INode<R, BaseContext> assembleSequence(
             BehaviorDefinitionNode node,
             Class<R> resultClass,
             ActionNodeResolver resolver) {
-        List<BehaviorNodeWrapper<R, BaseContext>> kids = mapChildren(node, resultClass, resolver);
-        return new BehaviorNodeWrapper<>(node.nodeName(), new SequenceNodeImpl<>(kids));
+        List<INode<R, BaseContext>> kids = mapChildren(node, resultClass, resolver);
+        return new SequenceNodeImpl<>(node.nodeName(), kids);
     }
 
-    private static <R extends NodeResult> BehaviorNodeWrapper<R, BaseContext> assembleSelector(
+    private static <R extends NodeResult> INode<R, BaseContext> assembleSelector(
             BehaviorDefinitionNode node,
             Class<R> resultClass,
             ActionNodeResolver resolver) {
-        List<BehaviorNodeWrapper<R, BaseContext>> kids = mapChildren(node, resultClass, resolver);
-        return new BehaviorNodeWrapper<>(node.nodeName(), new SelectorNodeImpl<>(kids));
+        List<INode<R, BaseContext>> kids = mapChildren(node, resultClass, resolver);
+        return new SelectorNodeImpl<>(node.nodeName(), kids);
     }
 
-    private static <R extends NodeResult> BehaviorNodeWrapper<R, BaseContext> assembleParallel(
+    private static <R extends NodeResult> INode<R, BaseContext> assembleParallel(
             BehaviorDefinitionNode node,
             Class<R> resultClass,
             ActionNodeResolver resolver) {
-        List<BehaviorNodeWrapper<R, BaseContext>> kids = mapChildren(node, resultClass, resolver);
-        return new BehaviorNodeWrapper<>(node.nodeName(), new ParallelNodeImpl<>(kids, null));
+        List<INode<R, BaseContext>> kids = mapChildren(node, resultClass, resolver);
+        return new ParallelNodeImpl<>(node.nodeName(), kids, null);
     }
 
-    private static <R extends NodeResult> BehaviorNodeWrapper<R, BaseContext> assembleRandom(
+    private static <R extends NodeResult> INode<R, BaseContext> assembleRandom(
             BehaviorDefinitionNode node,
             Class<R> resultClass,
             ActionNodeResolver resolver) {
-        List<BehaviorNodeWrapper<R, BaseContext>> kids = mapChildren(node, resultClass, resolver);
-        return new BehaviorNodeWrapper<>(node.nodeName(), new RandomNodeImpl<>(kids));
+        List<INode<R, BaseContext>> kids = mapChildren(node, resultClass, resolver);
+        return new RandomNodeImpl<>(node.nodeName(), kids);
     }
 
-    private static <R extends NodeResult> BehaviorNodeWrapper<R, BaseContext> assembleStrategy(
+    private static <R extends NodeResult> INode<R, BaseContext> assembleStrategy(
             BehaviorDefinitionNode node,
             Class<R> resultClass,
             ActionNodeResolver resolver) {
         if (node.condition() == null) {
             throw new DefinitionAssemblyException("Strategy requires condition: " + node.nodeName());
         }
-        BehaviorNodeWrapper<R, BaseContext> condition = assemble(node.condition(), resultClass, resolver);
-        Map<R, BehaviorNodeWrapper<R, BaseContext>> map = new LinkedHashMap<>();
+        INode<R, BaseContext> condition = assemble(node.condition(), resultClass, resolver);
+        Map<R, INode<R, BaseContext>> map = new LinkedHashMap<>();
         for (Map.Entry<String, BehaviorDefinitionNode> e : node.strategyMap().entrySet()) {
             R key = resolveStrategyKey(resultClass, e.getKey());
             map.put(key, assemble(e.getValue(), resultClass, resolver));
         }
-        return new BehaviorNodeWrapper<>(node.nodeName(), new StrategyNodeImpl<>(condition, map));
+        return new StrategyNodeImpl<>(node.nodeName(), condition, map);
     }
 
-    private static <R extends NodeResult> List<BehaviorNodeWrapper<R, BaseContext>> mapChildren(
+    private static <R extends NodeResult> List<INode<R, BaseContext>> mapChildren(
             BehaviorDefinitionNode node,
             Class<R> resultClass,
             ActionNodeResolver resolver) {

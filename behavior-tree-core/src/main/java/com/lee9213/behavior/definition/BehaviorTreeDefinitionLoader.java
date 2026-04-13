@@ -1,7 +1,6 @@
 package com.lee9213.behavior.definition;
 
 import com.lee9213.behavior.BaseContext;
-import com.lee9213.behavior.BehaviorNodeWrapper;
 import com.lee9213.behavior.NodeResult;
 import com.lee9213.behavior.definition.assemble.DefinitionAssembler;
 import com.lee9213.behavior.definition.codec.JsonDefinitionCodec;
@@ -9,6 +8,7 @@ import com.lee9213.behavior.definition.codec.XmlDefinitionCodec;
 import com.lee9213.behavior.definition.ir.BehaviorDefinitionNode;
 import com.lee9213.behavior.definition.resolve.ActionNodeResolver;
 import com.lee9213.behavior.definition.resolve.ReflectionActionNodeResolver;
+import com.lee9213.behavior.node.INode;
 
 import java.io.InputStream;
 import java.nio.charset.Charset;
@@ -32,7 +32,7 @@ public final class BehaviorTreeDefinitionLoader {
         this(new ReflectionActionNodeResolver());
     }
 
-    public <R extends NodeResult> BehaviorNodeWrapper<R, BaseContext> parse(
+    public <R extends NodeResult> INode<R, BaseContext> parse(
             String content,
             DefinitionFormat format,
             Class<R> resultClass) {
@@ -40,7 +40,7 @@ public final class BehaviorTreeDefinitionLoader {
         return DefinitionAssembler.assemble(root, resultClass, resolver);
     }
 
-    public <R extends NodeResult> BehaviorNodeWrapper<R, BaseContext> parse(
+    public <R extends NodeResult> INode<R, BaseContext> parse(
             InputStream in,
             Charset charset,
             DefinitionFormat format,
@@ -66,7 +66,7 @@ public final class BehaviorTreeDefinitionLoader {
     /**
      * 便捷重载：默认 UTF-8。
      */
-    public <R extends NodeResult> BehaviorNodeWrapper<R, BaseContext> parse(
+    public <R extends NodeResult> INode<R, BaseContext> parse(
             InputStream in,
             DefinitionFormat format,
             Class<R> resultClass) {

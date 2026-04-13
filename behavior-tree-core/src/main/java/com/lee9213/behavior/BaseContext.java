@@ -1,5 +1,6 @@
 package com.lee9213.behavior;
 
+import com.lee9213.behavior.node.INode;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -11,5 +12,5 @@ import java.io.Serializable;
 @Data
 public class BaseContext implements Serializable {
 
-    protected BehaviorNodeWrapper currentNode;
+    protected INode currentNode;
 }

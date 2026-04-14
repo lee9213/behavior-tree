@@ -1,2 +1,2 @@
-com.lee9213.behavior.spring.BehaviorFlowAutoConfiguration
-com.lee9213.behavior.spring.BehaviorDefinitionAutoConfiguration
+com.lee9213.behavior.tree.spring.BehaviorFlowAutoConfiguration
+com.lee9213.behavior.tree.spring.BehaviorDefinitionAutoConfiguration

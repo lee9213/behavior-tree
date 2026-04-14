@@ -1,0 +1,30 @@
+package com.lee9213.behavior.tree;
+
+import com.lee9213.behavior.tree.node.IActionNode;
+import org.springframework.stereotype.Service;
+
+/**
+ * @author lee9213@163.com
+ * @date 2024/5/31 14:22
+ */
+@Service("ActionNodeImpl0")
+public class ActionNodeImpl0 implements IActionNode<NodeResult, TestContext> {
+    @Override
+    public NodeResult execute(TestContext context) {
+        return NodeResult.SUCCESS;
+    }
+
+    @Override
+    public String getNodeName() {
+        return "ActionNodeImpl0";
+    }
+
+    @Override
+    public String getStepTag() {
+        return null;
+    }
+
+    @Override
+    public void setStepTag(String stepTag) {
+    }
+}

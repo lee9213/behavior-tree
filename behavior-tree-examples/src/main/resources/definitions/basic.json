@@ -1,0 +1,16 @@
+{
+  "type": "sequence",
+  "name": "root",
+  "children": [
+    {
+      "type": "action",
+      "name": "action1",
+      "beanName": "com.lee9213.behavior.tree.examples.basic.action.Action1"
+    },
+    {
+      "type": "action",
+      "name": "action2",
+      "beanName": "com.lee9213.behavior.tree.examples.basic.action.Action2"
+    }
+  ]
+}

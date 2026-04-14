@@ -1,7 +1,7 @@
 package com.lee9213.behavior.tree.node;
 
-import com.lee9213.behavior.BaseContext;
-import com.lee9213.behavior.NodeResult;
+import com.lee9213.behavior.tree.BaseContext;
+import com.lee9213.behavior.tree.NodeResult;
 
 /**
  * 动作函数接口，用于定义动作节点的执行逻辑

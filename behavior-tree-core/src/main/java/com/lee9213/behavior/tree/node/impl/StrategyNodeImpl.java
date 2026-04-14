@@ -1,7 +1,7 @@
 package com.lee9213.behavior.tree.node.impl;
 
-import com.lee9213.behavior.BaseContext;
-import com.lee9213.behavior.NodeResult;
+import com.lee9213.behavior.tree.BaseContext;
+import com.lee9213.behavior.tree.NodeResult;
 import com.lee9213.behavior.tree.exception.BehaviorNodeExecuteException;
 
 import com.lee9213.behavior.tree.node.INode;

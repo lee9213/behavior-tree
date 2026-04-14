@@ -12,15 +12,15 @@
 
 | 模块 | 职责 |
 |------|------|
-| **behavior-tree-core** | 行为树内核：节点实现、执行上下文、`BehaviorTree#execute`；定义加载 `BehaviorTreeDefinitionLoader`（JSON/XML → 中间表示 → 装配）；并行 `ParallelNodeImpl`；重试 `RetryExecutor` / `RetryPolicy` / `RetryPolicyRegistry`；叶子基类 `AbstractActionNode` 等。 |
-| **behavior-tree-engine** | 流程定义 `FlowDefinition`、校验、`FlowEngine` / `FlowEngineConfig`、内存 `ProcessInstanceStore`。 |
-| **behavior-tree-spring-boot-starter** | Spring Boot 3.x：默认 `BehaviorTreeDefinitionLoader` Bean（可与 `@EnableBehavior` 配合）；`FlowEngine` 自动配置；存在 `StringRedisTemplate` 时注册 `RedisProcessInstanceStore`。**无 Redis 时不会静默降级为内存 store**，需自行装配持久化实现。 |
+| **behavior-tree-core** | 行为树内核：节点实现、执行上下文 `BaseContext`、`BehaviorTree#execute`；定义加载 `BehaviorTreeDefinitionLoader`（JSON/XML → 中间表示 → 装配）；并行 `ParallelNodeImpl`；重试 `RetryPolicy`；叶子基类 `AbstractActionNode`；动作节点函数 `ActionNodeFunction` 等。 |
+| **behavior-tree-engine** | 流程定义 `FlowDefinition`、校验、`FlowEngine`、内存 `InMemoryProcessInstanceStore` 等。 |
+| **behavior-tree-spring-boot-starter** | Spring Boot 3.x：默认 `BehaviorTreeDefinitionLoader` Bean；`FlowEngine` 自动配置；存在 `StringRedisTemplate` 时注册 `RedisProcessInstanceStore`；`EnableBehavior` 注解、`SpringBeanActionNodeResolver` 等 Spring 集成功能。**无 Redis 时不会静默降级为内存 store**，需自行装配持久化实现。 |
 
 ---
 
 ## 快速开始（编程式）
 
-1. 使用 `BehaviorTreeDefinitionLoader` 解析 JSON 或 XML（指定 `DefinitionFormat` 与结果类型 `Class<? extends NodeResult>`），得到根节点 `BehaviorNodeWrapper`。  
+1. 使用 `BehaviorTreeDefinitionLoader` 解析 JSON 或 XML（指定 `DefinitionFormat` 与结果类型 `Class<? extends NodeResult>`），得到根节点 `INode`。  
 2. 构造 `BehaviorTree`，调用 `execute(context)` 执行。
 
 动作节点解析：
@@ -28,13 +28,13 @@
 - 定义中 `container=spring` 时，通过 Spring 按 Bean 名解析 `IActionNode`（需 `@EnableBehavior` 等以注册 `SpringNodeUtil`）。  
 - 否则按 `beanName` 当作全限定类名，反射 `newInstance`。
 
-完整示例见测试：`com.lee9213.behavior.BehaviorTreeTest`，定义文件：`behavior-tree-core/src/test/resources/definitions/golden.json`。
+完整示例见测试：`com.lee9213.behavior.tree.BehaviorTreeTest`，定义文件：`behavior-tree-core/src/test/resources/definitions/golden.json`。
 
 ---
 
 ## Spring Boot
 
-- **`@EnableBehavior`**（`com.lee9213.behavior.spring`）：启用 Spring 侧动作解析能力。  
+- **`@EnableBehavior`**（`com.lee9213.behavior.tree.spring.annotation`）：启用 Spring 侧动作解析能力。  
 - **Starter** 提供默认 **`BehaviorTreeDefinitionLoader`** Bean（`CompositeActionNodeResolver`：Spring Bean + 反射类名）。
 
 可选配置 **`behavior.definition`**（声明式描述资源位置与编码；自动配置只注册 Loader，不强制从 `location` 解析根节点，以免缺少 `resultClass` 等元数据）：
@@ -80,12 +80,18 @@
 ## 流程引擎要点
 
 - **持久化**：`FlowEngine.run` 在配置了 store 时会先 **load** 已有快照；若快照存在且 `definitionId` / `definitionVersion` 与当前 `FlowDefinition` 不一致，则 **fail-closed**（抛出 `StoreException`）。  
-- **重试**：core 包 `com.lee9213.behavior.retry` 提供通用重试抽象；叶子可继承 `AbstractActionNode` 并传入重试开关与 `RetryPolicy`。`FlowEngineConfig` 持有注册表供引擎侧使用。
+- **重试**：core 包 `com.lee9213.behavior.tree.retry` 提供通用重试抽象；叶子可继承 `AbstractActionNode` 并传入重试开关与 `RetryPolicy`。
 
 设计说明见：`docs/superpowers/specs/2026-04-11-behavior-flow-engine-design.md`。
 
 ---
 
-## 破坏性变更（定义加载）
+## 破坏性变更
 
-旧包 **`com.lee9213.behavior.parser`** 已移除，请统一使用 **`BehaviorTreeDefinitionLoader`** 加载定义。
+1. **移除 BehaviorNodeWrapper**：直接使用 `INode` 接口，不再需要包装类。
+2. **上下文重构**：将 `flowInstanceId` 从 `FlowExecutionContext` 移到 `BaseContext`，并删除了 `FlowExecutionContext` 类。
+3. **Spring 集成调整**：将 Spring 相关功能从 `behavior-tree-core` 移到 `behavior-tree-spring-boot-starter` 模块中。
+4. **重试机制简化**：移除了 `RetryExecutor` 和 `RetryPolicyRegistry` 类，简化了重试机制。
+5. **动作节点函数**：将 `ActionFunction` 移出来并修改为 `ActionNodeFunction`。
+6. **节点命名**：将 `ActionNodeImpl` 改为 `DefaultActionNodeImpl`。
+7. **包路径变更**：Spring 相关类的包路径从 `com.lee9213.behavior.spring` 变更为 `com.lee9213.behavior.tree.spring`。

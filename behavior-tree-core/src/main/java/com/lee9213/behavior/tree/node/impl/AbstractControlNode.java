@@ -1,8 +1,8 @@
 package com.lee9213.behavior.tree.node.impl;
 
 import com.google.common.collect.Lists;
-import com.lee9213.behavior.BaseContext;
-import com.lee9213.behavior.NodeResult;
+import com.lee9213.behavior.tree.BaseContext;
+import com.lee9213.behavior.tree.NodeResult;
 import com.lee9213.behavior.tree.exception.BehaviorNodeExecuteException;
 import com.lee9213.behavior.tree.node.IControlNode;
 import com.lee9213.behavior.tree.node.INode;
@@ -40,7 +40,7 @@ public abstract class AbstractControlNode<Result extends NodeResult, Context ext
     }
 
     /**
-     * Structural child nodes for validation and tooling. Empty when there are no children.
+     * 用于验证和工具的结构子节点。无子女时为空。
      */
     public List<INode<Result, Context>> getChildNodes() {
         if (childNodeList == null) {

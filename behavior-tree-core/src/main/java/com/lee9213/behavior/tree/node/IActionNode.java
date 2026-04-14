@@ -1,7 +1,7 @@
 package com.lee9213.behavior.tree.node;
 
-import com.lee9213.behavior.BaseContext;
-import com.lee9213.behavior.NodeResult;
+import com.lee9213.behavior.tree.BaseContext;
+import com.lee9213.behavior.tree.NodeResult;
 
 /**
  * 行为节点接口，具体执行某个行为的节点都需要实现该接口

@@ -1,7 +1,7 @@
 package com.lee9213.behavior.tree.node;
 
-import com.lee9213.behavior.BaseContext;
-import com.lee9213.behavior.NodeResult;
+import com.lee9213.behavior.tree.BaseContext;
+import com.lee9213.behavior.tree.NodeResult;
 
 /**
  * 控制节点接口，一般为中间节点，用于控制行为树的执行流程，决定了其子节点是以顺序、并行、随机或其它方式执行。

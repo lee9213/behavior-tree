@@ -2,8 +2,8 @@ package com.lee9213.behavior.tree.node.impl;
 
 import java.util.concurrent.ThreadLocalRandom;
 
-import com.lee9213.behavior.BaseContext;
-import com.lee9213.behavior.NodeResult;
+import com.lee9213.behavior.tree.BaseContext;
+import com.lee9213.behavior.tree.NodeResult;
 import com.lee9213.behavior.tree.exception.BehaviorNodeExecuteException;
 import com.lee9213.behavior.tree.node.IActionNode;
 import com.lee9213.behavior.tree.retry.RetryPolicy;
@@ -84,7 +84,7 @@ public abstract class AbstractActionNode<Result extends NodeResult, Context exte
     }
 
     /**
-     * 单次执行业务逻辑；失败时由 {@link RetryExecutor} 按策略重试（当 {@code retryEnabled} 为 true）。
+     * 单次执行业务逻辑；失败时按策略重试（当 {@code retryEnabled} 为 true）。
      */
     protected abstract Result doExecute(Context context) throws Exception;
 }

@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** 在 `behavior-tree-core` 中实现规格所述 **语法层 → 不可变 IR → DefinitionAssembler → `BehaviorNodeWrapper`**，并暴露 **`BehaviorTreeDefinitionLoader`**；在 **`behavior-tree-spring-boot-starter`** 中增加 **可选** 的配置属性与 **Loader Bean**，与现有 `com.lee9213.behavior.spring.EnableBehavior` / `SpringNodeUtil` 正交。
+**Goal:** 在 `behavior-tree-core` 中实现规格所述 **语法层 → 不可变 IR → DefinitionAssembler → `BehaviorNodeWrapper`**，并暴露 **`BehaviorTreeDefinitionLoader`**；在 **`behavior-tree-spring-boot-starter`** 中增加 **可选** 的配置属性与 **Loader Bean**，与现有 `com.lee9213.behavior.tree.spring.annotation.EnableBehavior` / `SpringNodeUtil` 正交。
 
 **Architecture:** Jackson 将 JSON/XML 绑定到同一套 **record IR**；**无 Spring** 时使用 **反射按类名** 解析动作；**Spring** 时通过 **`ActionNodeResolver` 的 ApplicationContext 实现** 按 Bean 名解析。装配层仅依赖 **`ActionNodeResolver`** 与 **`Class<?>` result 类型**，不解析字符串。**Parallel** 首版 IR **不表达 executor**，装配时始终使用 `new ParallelNodeImpl(children, null)`（与当前默认「顺序执行」一致）。
 
@@ -347,8 +347,8 @@ git commit -m "feat(definition): JSON and XML codecs for BehaviorDefinitionNode"
 ```java
 package com.lee9213.behavior.definition.resolve;
 
-import com.lee9213.behavior.BaseContext;
-import com.lee9213.behavior.NodeResult;
+import com.lee9213.behavior.tree.BaseContext;
+import com.lee9213.behavior.tree.NodeResult;
 import com.lee9213.behavior.tree.definition.ir.BehaviorDefinitionNode;
 import com.lee9213.behavior.tree.node.IActionNode;
 
@@ -412,7 +412,7 @@ git commit -m "feat(definition): DefinitionAssembler for all NodeTypes"
 package com.lee9213.behavior.definition;
 
 import com.lee9213.behavior.BehaviorNodeWrapper;
-import com.lee9213.behavior.NodeResult;
+import com.lee9213.behavior.tree.NodeResult;
 import com.lee9213.behavior.tree.definition.assemble.DefinitionAssembler;
 import com.lee9213.behavior.tree.definition.codec.JsonDefinitionCodec;
 import com.lee9213.behavior.tree.definition.codec.XmlDefinitionCodec;
@@ -554,7 +554,7 @@ public class BehaviorDefinitionProperties {
 - [ ] **Step 4: 注册自动配置类到 `imports` 文件**
 
 ```
-com.lee9213.behavior.spring.BehaviorDefinitionAutoConfiguration
+com.lee9213.behavior.tree.spring.BehaviorDefinitionAutoConfiguration
 ```
 
 - [ ] **Step 5: 在 `behavior-tree-spring-boot-starter/src/test/java` 增加 `@SpringBootTest` 切片测试**（`properties = "behavior.definition.location=classpath:..."`），断言 Loader Bean 存在。**若模块暂无测试依赖**，在 `pom.xml` 增加 `spring-boot-starter-test` `scope=test`。

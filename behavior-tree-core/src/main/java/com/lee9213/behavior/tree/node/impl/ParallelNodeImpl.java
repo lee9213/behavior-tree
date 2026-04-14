@@ -1,9 +1,7 @@
 package com.lee9213.behavior.tree.node.impl;
 
-import com.lee9213.behavior.BaseContext;
-import com.lee9213.behavior.NodeResult;
-import com.lee9213.behavior.flow.FlowExecutionContext;
-
+import com.lee9213.behavior.tree.BaseContext;
+import com.lee9213.behavior.tree.NodeResult;
 import com.lee9213.behavior.tree.node.INode;
 import lombok.extern.log4j.Log4j2;
 
@@ -14,7 +12,7 @@ import java.util.concurrent.Executor;
 
 /**
  * 并行节点：{@code executor == null} 时顺序执行子节点；非空时在 {@link Executor} 上并发执行（不取消兄弟任务，全部结束后合取成功/失败）。
- * 并发路径建议使用 {@link FlowExecutionContext} 以便分支隔离；否则多线程可能共享同一可变 {@link BaseContext}。
+ * 并发路径需要确保 {@link BaseContext} 是线程安全的，或者为每个分支创建独立的上下文实例。
  *
  * @author lee9213@163.com
  * @date 2024/5/30 14:17
@@ -63,11 +61,7 @@ public final class ParallelNodeImpl<Result extends NodeResult, Context extends B
         List<CompletableFuture<Result>> futures = new ArrayList<>();
         for (INode<Result, Context> node : childNodeList) {
             final INode<Result, Context> n = node;
-            Context branchContext = context;
-            if (context instanceof FlowExecutionContext) {
-                branchContext = (Context) ((FlowExecutionContext) context).copyForParallelBranch();
-            }
-            Context bc = branchContext;
+            Context bc = context;
             CompletableFuture<Result> future = CompletableFuture.supplyAsync(() -> {
                 bc.setCurrentNode(n);
                 return n.execute(bc);

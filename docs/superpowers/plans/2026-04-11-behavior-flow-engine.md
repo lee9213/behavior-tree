@@ -287,7 +287,7 @@ git commit -m "build: multi-module parent and behavior-tree-core on JDK 17"
 ```java
 package com.lee9213.behavior.flow;
 
-import com.lee9213.behavior.BaseContext;
+import com.lee9213.behavior.tree.BaseContext;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -324,9 +324,9 @@ public class FlowExecutionContext extends BaseContext {
 ```java
 package com.lee9213.behavior.node.impl;
 
-import com.lee9213.behavior.BaseContext;
+import com.lee9213.behavior.tree.BaseContext;
 import com.lee9213.behavior.BehaviorNodeWrapper;
-import com.lee9213.behavior.NodeResult;
+import com.lee9213.behavior.tree.NodeResult;
 import com.lee9213.behavior.flow.FlowExecutionContext;
 import com.lee9213.behavior.node.IParallelNode;
 import lombok.extern.log4j.Log4j2;
@@ -408,7 +408,7 @@ public BehaviorNodeWrapper<Result, Context> buildConcurrentParallelNode(
 package com.lee9213.behavior.node.impl;
 
 import com.lee9213.behavior.BehaviorNodeWrapper;
-import com.lee9213.behavior.NodeResult;
+import com.lee9213.behavior.tree.NodeResult;
 import com.lee9213.behavior.flow.FlowExecutionContext;
 import com.lee9213.behavior.tree.node.INode;
 import org.junit.jupiter.api.Test;
@@ -489,7 +489,7 @@ git commit -m "feat(core): concurrent parallel node and FlowExecutionContext"
 package com.lee9213.behavior.engine;
 
 import com.lee9213.behavior.tree.BehaviorTree;
-import com.lee9213.behavior.NodeResult;
+import com.lee9213.behavior.tree.NodeResult;
 import com.lee9213.behavior.flow.FlowExecutionContext;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -647,7 +647,7 @@ public final class RetryExecutor {
 package com.lee9213.behavior.engine;
 
 import com.lee9213.behavior.engine.retry.RetryPolicyRegistry;
-import com.lee9213.behavior.engine.store.ProcessInstanceStore;
+import com.lee9213.behavior.tree.store.engine.ProcessInstanceStore;
 
 import java.util.concurrent.Executor;
 import java.util.concurrent.ForkJoinPool;
@@ -730,7 +730,7 @@ public class FlowInstanceSnapshot implements Serializable {
 ```java
 package com.lee9213.behavior.engine.store;
 
-import com.lee9213.behavior.engine.FlowInstanceSnapshot;
+import com.lee9213.behavior.tree.engine.FlowInstanceSnapshot;
 
 import java.util.Optional;
 
@@ -750,9 +750,9 @@ public interface ProcessInstanceStore {
 ```java
 package com.lee9213.behavior.engine;
 
-import com.lee9213.behavior.NodeResult;
-import com.lee9213.behavior.engine.store.ProcessInstanceStore;
-import com.lee9213.behavior.engine.store.StoreException;
+import com.lee9213.behavior.tree.NodeResult;
+import com.lee9213.behavior.tree.store.engine.ProcessInstanceStore;
+import com.lee9213.behavior.tree.store.engine.StoreException;
 import com.lee9213.behavior.engine.validation.FlowDefinitionValidator;
 import com.lee9213.behavior.flow.FlowExecutionContext;
 

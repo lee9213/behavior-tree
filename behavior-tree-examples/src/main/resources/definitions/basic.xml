@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<behavior>
+    <node type="sequence" name="root">
+        <node type="action" name="action1" beanName="com.lee9213.behavior.tree.examples.basic.action.Action1"/>
+        <node type="action" name="action2" beanName="com.lee9213.behavior.tree.examples.basic.action.Action2"/>
+    </node>
+</behavior>

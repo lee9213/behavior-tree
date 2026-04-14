@@ -1,0 +1,31 @@
+package com.lee9213.behavior.tree.engine;
+
+import com.lee9213.behavior.tree.BehaviorTree;
+import com.lee9213.behavior.tree.NodeResult;
+import com.lee9213.behavior.tree.node.INode;
+import com.lee9213.behavior.tree.node.impl.SuccessActionNodeImpl;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
+class FlowDefinitionValidatorTest {
+
+    @Test
+    void validate_blankId_fails() {
+        INode<NodeResult, TestContext> root = 
+                new SuccessActionNodeImpl<>("leaf");
+        BehaviorTree<NodeResult, TestContext> tree = new BehaviorTree<>(root);
+        FlowDefinition def = new FlowDefinition("   ", "1.0", tree);
+        assertThrows(InvalidFlowDefinitionException.class, () -> FlowDefinitionValidator.validate(def));
+    }
+
+    @Test
+    void validate_minimalSuccessLeaf_passes() {
+        INode<NodeResult, TestContext> root = 
+                new SuccessActionNodeImpl<>("leaf");
+        BehaviorTree<NodeResult, TestContext> tree = new BehaviorTree<>(root);
+        FlowDefinition def = new FlowDefinition("flow-a", "1.0.0", tree);
+        assertDoesNotThrow(() -> FlowDefinitionValidator.validate(def));
+    }
+}

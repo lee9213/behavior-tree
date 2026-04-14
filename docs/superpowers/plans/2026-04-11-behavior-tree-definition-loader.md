@@ -216,8 +216,8 @@ git commit -m "feat(definition): shared Jackson JSON/XML mapper configuration"
 package com.lee9213.behavior.definition.codec;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.lee9213.behavior.definition.exception.DefinitionSyntaxException;
-import com.lee9213.behavior.definition.ir.BehaviorDefinitionNode;
+import com.lee9213.behavior.tree.definition.exception.DefinitionSyntaxException;
+import com.lee9213.behavior.tree.definition.ir.BehaviorDefinitionNode;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -289,8 +289,8 @@ public record BehaviorDefinitionNode(
 package com.lee9213.behavior.definition.codec;
 
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
-import com.lee9213.behavior.definition.exception.DefinitionSyntaxException;
-import com.lee9213.behavior.definition.ir.BehaviorDefinitionNode;
+import com.lee9213.behavior.tree.definition.exception.DefinitionSyntaxException;
+import com.lee9213.behavior.tree.definition.ir.BehaviorDefinitionNode;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -349,7 +349,7 @@ package com.lee9213.behavior.definition.resolve;
 
 import com.lee9213.behavior.BaseContext;
 import com.lee9213.behavior.NodeResult;
-import com.lee9213.behavior.definition.ir.BehaviorDefinitionNode;
+import com.lee9213.behavior.tree.definition.ir.BehaviorDefinitionNode;
 import com.lee9213.behavior.tree.node.IActionNode;
 
 public interface ActionNodeResolver {
@@ -413,12 +413,12 @@ package com.lee9213.behavior.definition;
 
 import com.lee9213.behavior.BehaviorNodeWrapper;
 import com.lee9213.behavior.NodeResult;
-import com.lee9213.behavior.definition.assemble.DefinitionAssembler;
-import com.lee9213.behavior.definition.codec.JsonDefinitionCodec;
-import com.lee9213.behavior.definition.codec.XmlDefinitionCodec;
-import com.lee9213.behavior.definition.ir.BehaviorDefinitionNode;
-import com.lee9213.behavior.definition.resolve.ActionNodeResolver;
-import com.lee9213.behavior.definition.resolve.ReflectionActionNodeResolver;
+import com.lee9213.behavior.tree.definition.assemble.DefinitionAssembler;
+import com.lee9213.behavior.tree.definition.codec.JsonDefinitionCodec;
+import com.lee9213.behavior.tree.definition.codec.XmlDefinitionCodec;
+import com.lee9213.behavior.tree.definition.ir.BehaviorDefinitionNode;
+import com.lee9213.behavior.tree.definition.resolve.ActionNodeResolver;
+import com.lee9213.behavior.tree.definition.resolve.ReflectionActionNodeResolver;
 
 import java.io.InputStream;
 import java.nio.charset.Charset;
@@ -522,7 +522,7 @@ git commit -m "test: load behavior tree via BehaviorTreeDefinitionLoader in Beha
 ```java
 package com.lee9213.behavior.spring;
 
-import com.lee9213.behavior.definition.DefinitionFormat;
+import com.lee9213.behavior.tree.definition.DefinitionFormat;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 import java.nio.charset.Charset;

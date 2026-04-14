@@ -1,4 +1,4 @@
-package com.lee9213.behavior.definition.ir;
+package com.lee9213.behavior.tree.definition.ir;
 
 import com.lee9213.behavior.tree.enums.NodeType;
 

@@ -1,13 +1,13 @@
-package com.lee9213.behavior.definition;
+package com.lee9213.behavior.tree.definition;
 
 import com.lee9213.behavior.BaseContext;
 import com.lee9213.behavior.NodeResult;
-import com.lee9213.behavior.definition.assemble.DefinitionAssembler;
-import com.lee9213.behavior.definition.codec.JsonDefinitionCodec;
-import com.lee9213.behavior.definition.codec.XmlDefinitionCodec;
-import com.lee9213.behavior.definition.ir.BehaviorDefinitionNode;
-import com.lee9213.behavior.definition.resolve.ActionNodeResolver;
-import com.lee9213.behavior.definition.resolve.ReflectionActionNodeResolver;
+import com.lee9213.behavior.tree.definition.assemble.DefinitionAssembler;
+import com.lee9213.behavior.tree.definition.codec.JsonDefinitionCodec;
+import com.lee9213.behavior.tree.definition.codec.XmlDefinitionCodec;
+import com.lee9213.behavior.tree.definition.ir.BehaviorDefinitionNode;
+import com.lee9213.behavior.tree.definition.resolve.ActionNodeResolver;
+import com.lee9213.behavior.tree.definition.resolve.ReflectionActionNodeResolver;
 import com.lee9213.behavior.tree.node.INode;
 
 import java.io.InputStream;

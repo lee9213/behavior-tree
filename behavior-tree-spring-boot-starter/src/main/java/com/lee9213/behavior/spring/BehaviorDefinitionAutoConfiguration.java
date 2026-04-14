@@ -1,8 +1,9 @@
 package com.lee9213.behavior.spring;
 
-import com.lee9213.behavior.definition.BehaviorTreeDefinitionLoader;
-import com.lee9213.behavior.definition.resolve.CompositeActionNodeResolver;
-import com.lee9213.behavior.definition.resolve.ReflectionActionNodeResolver;
+import com.lee9213.behavior.tree.definition.BehaviorTreeDefinitionLoader;
+import com.lee9213.behavior.tree.definition.resolve.CompositeActionNodeResolver;
+import com.lee9213.behavior.tree.definition.resolve.ReflectionActionNodeResolver;
+import com.lee9213.behavior.tree.definition.resolve.SpringBeanActionNodeResolver;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;

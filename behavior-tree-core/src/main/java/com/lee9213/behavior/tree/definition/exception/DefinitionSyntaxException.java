@@ -1,4 +1,4 @@
-package com.lee9213.behavior.definition.exception;
+package com.lee9213.behavior.tree.definition.exception;
 
 /**
  * 语法层失败：文本无法解析为 IR。

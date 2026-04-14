@@ -1,8 +1,8 @@
-package com.lee9213.behavior.definition.resolve;
+package com.lee9213.behavior.tree.definition.resolve;
 
 import com.lee9213.behavior.BaseContext;
 import com.lee9213.behavior.NodeResult;
-import com.lee9213.behavior.definition.ir.BehaviorDefinitionNode;
+import com.lee9213.behavior.tree.definition.ir.BehaviorDefinitionNode;
 import com.lee9213.behavior.tree.node.IActionNode;
 
 /**

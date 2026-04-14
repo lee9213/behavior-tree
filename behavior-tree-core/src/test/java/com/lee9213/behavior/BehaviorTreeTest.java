@@ -1,12 +1,12 @@
 package com.lee9213.behavior;
 
-import com.lee9213.behavior.definition.BehaviorTreeDefinitionLoader;
-import com.lee9213.behavior.definition.DefinitionFormat;
-import com.lee9213.behavior.definition.resolve.CompositeActionNodeResolver;
-import com.lee9213.behavior.definition.resolve.ReflectionActionNodeResolver;
+import com.lee9213.behavior.tree.definition.BehaviorTreeDefinitionLoader;
+import com.lee9213.behavior.tree.definition.DefinitionFormat;
+import com.lee9213.behavior.tree.definition.resolve.CompositeActionNodeResolver;
+import com.lee9213.behavior.tree.definition.resolve.ReflectionActionNodeResolver;
 import com.lee9213.behavior.tree.node.INode;
 import com.lee9213.behavior.spring.EnableBehavior;
-import com.lee9213.behavior.spring.SpringBeanActionNodeResolver;
+import com.lee9213.behavior.tree.definition.resolve.SpringBeanActionNodeResolver;
 import com.lee9213.behavior.tree.BehaviorTree;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

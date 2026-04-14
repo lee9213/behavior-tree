@@ -1,10 +1,10 @@
-package com.lee9213.behavior.definition.assemble;
+package com.lee9213.behavior.tree.definition.assemble;
 
 import com.lee9213.behavior.BaseContext;
 import com.lee9213.behavior.NodeResult;
-import com.lee9213.behavior.definition.exception.DefinitionAssemblyException;
-import com.lee9213.behavior.definition.ir.BehaviorDefinitionNode;
-import com.lee9213.behavior.definition.resolve.ActionNodeResolver;
+import com.lee9213.behavior.tree.definition.exception.DefinitionAssemblyException;
+import com.lee9213.behavior.tree.definition.ir.BehaviorDefinitionNode;
+import com.lee9213.behavior.tree.definition.resolve.ActionNodeResolver;
 import com.lee9213.behavior.tree.enums.NodeType;
 import com.lee9213.behavior.tree.node.INode;
 import com.lee9213.behavior.tree.node.IActionNode;

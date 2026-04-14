@@ -1,12 +1,12 @@
-package com.lee9213.behavior.definition.codec;
+package com.lee9213.behavior.tree.definition.codec;
 
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
-import com.lee9213.behavior.definition.exception.DefinitionSyntaxException;
-import com.lee9213.behavior.definition.ir.BehaviorDefinitionNode;
+import com.lee9213.behavior.tree.definition.exception.DefinitionSyntaxException;
+import com.lee9213.behavior.tree.definition.ir.BehaviorDefinitionNode;
 import com.lee9213.behavior.tree.enums.NodeType;
 
 import java.io.IOException;

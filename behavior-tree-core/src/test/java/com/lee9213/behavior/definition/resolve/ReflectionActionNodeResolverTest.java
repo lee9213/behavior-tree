@@ -2,7 +2,8 @@ package com.lee9213.behavior.definition.resolve;
 
 import com.lee9213.behavior.NodeResult;
 import com.lee9213.behavior.TestContext;
-import com.lee9213.behavior.definition.ir.BehaviorDefinitionNode;
+import com.lee9213.behavior.tree.definition.ir.BehaviorDefinitionNode;
+import com.lee9213.behavior.tree.definition.resolve.ReflectionActionNodeResolver;
 import com.lee9213.behavior.tree.enums.NodeType;
 import com.lee9213.behavior.tree.node.IActionNode;
 import com.lee9213.behavior.tree.node.impl.SuccessActionNodeImpl;

@@ -1,8 +1,8 @@
-package com.lee9213.behavior.definition.codec;
+package com.lee9213.behavior.tree.definition.codec;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.lee9213.behavior.definition.exception.DefinitionSyntaxException;
-import com.lee9213.behavior.definition.ir.BehaviorDefinitionNode;
+import com.lee9213.behavior.tree.definition.exception.DefinitionSyntaxException;
+import com.lee9213.behavior.tree.definition.ir.BehaviorDefinitionNode;
 
 import java.io.IOException;
 import java.io.InputStream;

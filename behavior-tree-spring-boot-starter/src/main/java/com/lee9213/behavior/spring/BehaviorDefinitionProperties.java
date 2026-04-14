@@ -1,6 +1,7 @@
 package com.lee9213.behavior.spring;
 
-import com.lee9213.behavior.definition.DefinitionFormat;
+import com.lee9213.behavior.tree.definition.DefinitionFormat;
+import com.lee9213.behavior.tree.definition.BehaviorTreeDefinitionLoader;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 import java.nio.charset.Charset;
@@ -8,7 +9,7 @@ import java.nio.charset.StandardCharsets;
 
 /**
  * 行为树定义资源（可选）：由应用通过 {@link org.springframework.core.io.Resource} 自行加载时仅需
- * {@link com.lee9213.behavior.definition.BehaviorTreeDefinitionLoader} Bean；本属性用于声明式配置位置与格式。
+ * {@link BehaviorTreeDefinitionLoader} Bean；本属性用于声明式配置位置与格式。
  */
 @ConfigurationProperties(prefix = "behavior.definition")
 public class BehaviorDefinitionProperties {

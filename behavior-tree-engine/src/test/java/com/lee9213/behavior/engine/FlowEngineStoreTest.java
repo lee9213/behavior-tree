@@ -1,9 +1,9 @@
 package com.lee9213.behavior.engine;
 
-import com.lee9213.behavior.BehaviorNodeWrapper;
 import com.lee9213.behavior.BehaviorTree;
 import com.lee9213.behavior.NodeResult;
 import com.lee9213.behavior.flow.FlowExecutionContext;
+import com.lee9213.behavior.node.INode;
 import com.lee9213.behavior.node.impl.SuccessActionNodeImpl;
 import com.lee9213.behavior.engine.store.ProcessInstanceStore;
 import com.lee9213.behavior.engine.store.StoreException;
@@ -45,8 +45,8 @@ class FlowEngineStoreTest {
         config.setStore(store);
         FlowEngine engine = new FlowEngine(config);
 
-        BehaviorNodeWrapper<NodeResult, FlowExecutionContext> root =
-                new BehaviorNodeWrapper<>("leaf", new SuccessActionNodeImpl<>());
+        INode<NodeResult, FlowExecutionContext> root = 
+                new SuccessActionNodeImpl<>("leaf");
         BehaviorTree<NodeResult, FlowExecutionContext> tree = new BehaviorTree<>(root);
         FlowDefinition def = new FlowDefinition("flow-a", "1.0.0", tree);
 
@@ -81,8 +81,8 @@ class FlowEngineStoreTest {
         FlowEngineConfig config = new FlowEngineConfig();
         config.setStore(store);
         FlowEngine engine = new FlowEngine(config);
-        BehaviorNodeWrapper<NodeResult, FlowExecutionContext> root =
-                new BehaviorNodeWrapper<>("leaf", new SuccessActionNodeImpl<>());
+        INode<NodeResult, FlowExecutionContext> root = 
+                new SuccessActionNodeImpl<>("leaf");
         BehaviorTree<NodeResult, FlowExecutionContext> tree = new BehaviorTree<>(root);
         FlowDefinition def = new FlowDefinition("flow-a", "1.0.0", tree);
 
@@ -115,8 +115,8 @@ class FlowEngineStoreTest {
         FlowEngineConfig config = new FlowEngineConfig();
         config.setStore(store);
         FlowEngine engine = new FlowEngine(config);
-        BehaviorNodeWrapper<NodeResult, FlowExecutionContext> root =
-                new BehaviorNodeWrapper<>("leaf", new SuccessActionNodeImpl<>());
+        INode<NodeResult, FlowExecutionContext> root = 
+                new SuccessActionNodeImpl<>("leaf");
         BehaviorTree<NodeResult, FlowExecutionContext> tree = new BehaviorTree<>(root);
         FlowDefinition def = new FlowDefinition("flow-a", "1.0.0", tree);
         FlowExecutionContext ctx = new FlowExecutionContext();

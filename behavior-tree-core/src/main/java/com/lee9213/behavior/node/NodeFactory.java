@@ -2,7 +2,7 @@ package com.lee9213.behavior.node;
 
 import com.lee9213.behavior.BaseContext;
 import com.lee9213.behavior.NodeResult;
-import com.lee9213.behavior.RetryPolicy;
+import com.lee9213.behavior.retry.RetryPolicy;
 import com.lee9213.behavior.node.impl.*;
 
 import java.util.List;
@@ -135,18 +135,7 @@ public class NodeFactory {
      * @param <Context>    上下文类型
      * @return 自定义动作节点
      */
-    public static <Result extends NodeResult, Context extends BaseContext> IActionNode<Result, Context> createActionNode(String nodeName, boolean retryEnabled, RetryPolicy retryPolicy, ActionFunction<Result, Context> action) {
+    public static <Result extends NodeResult, Context extends BaseContext> IActionNode<Result, Context> createActionNode(String nodeName, boolean retryEnabled, RetryPolicy retryPolicy, ActionNodeImpl.ActionFunction<Result, Context> action) {
         return new ActionNodeImpl<>(nodeName, retryEnabled, retryPolicy, action);
-    }
-
-    /**
-     * 动作函数接口
-     *
-     * @param <Result>  节点结果类型
-     * @param <Context> 上下文类型
-     */
-    @FunctionalInterface
-    public interface ActionFunction<Result extends NodeResult, Context extends BaseContext> {
-        Result apply(Context context);
     }
 }

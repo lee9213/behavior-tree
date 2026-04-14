@@ -1,6 +1,5 @@
 package com.lee9213.behavior.engine;
 
-import com.lee9213.behavior.BehaviorNodeWrapper;
 import com.lee9213.behavior.BehaviorTree;
 import com.lee9213.behavior.NodeResult;
 import com.lee9213.behavior.flow.FlowExecutionContext;
@@ -38,13 +37,13 @@ public final class FlowDefinitionValidator {
         if (tree == null) {
             throw new InvalidFlowDefinitionException("BehaviorTree is null");
         }
-        BehaviorNodeWrapper<NodeResult, FlowExecutionContext> root = tree.getRootNode();
+        INode<NodeResult, FlowExecutionContext> root = tree.getRootNode();
         if (root == null) {
             throw new InvalidFlowDefinitionException("Behavior tree root is null");
         }
 
         bfsAssignPathIds(root);
-        IdentityHashMap<BehaviorNodeWrapper<?, ?>, List<BehaviorNodeWrapper<?, ?>>> adj = buildStructuralAdjacency(root);
+        IdentityHashMap<INode<?, ?>, List<INode<?, ?>>> adj = buildStructuralAdjacency(root);
         if (hasCycle(adj, root)) {
             throw new InvalidFlowDefinitionException("Behavior graph contains a cycle");
         }
@@ -53,14 +52,14 @@ public final class FlowDefinitionValidator {
     /**
      * BFS from root assigning stable path ids ("0", "0_0", "0_1", ...).
      */
-    private static void bfsAssignPathIds(BehaviorNodeWrapper<NodeResult, FlowExecutionContext> root) {
+    private static void bfsAssignPathIds(INode<NodeResult, FlowExecutionContext> root) {
         ArrayDeque<PathItem> queue = new ArrayDeque<>();
         queue.add(new PathItem(root, "0"));
         while (!queue.isEmpty()) {
             PathItem item = queue.remove();
-            List<BehaviorNodeWrapper<NodeResult, FlowExecutionContext>> children = structuralChildren(item.wrapper);
+            List<INode<NodeResult, FlowExecutionContext>> children = structuralChildren(item.node);
             for (int i = 0; i < children.size(); i++) {
-                BehaviorNodeWrapper<NodeResult, FlowExecutionContext> child = children.get(i);
+                INode<NodeResult, FlowExecutionContext> child = children.get(i);
                 if (child == null) {
                     throw new InvalidFlowDefinitionException("Structural child is null at path " + item.pathId);
                 }
@@ -70,29 +69,29 @@ public final class FlowDefinitionValidator {
     }
 
     private static final class PathItem {
-        final BehaviorNodeWrapper<NodeResult, FlowExecutionContext> wrapper;
+        final INode<NodeResult, FlowExecutionContext> node;
         final String pathId;
 
-        PathItem(BehaviorNodeWrapper<NodeResult, FlowExecutionContext> wrapper, String pathId) {
-            this.wrapper = wrapper;
+        PathItem(INode<NodeResult, FlowExecutionContext> node, String pathId) {
+            this.node = node;
             this.pathId = pathId;
         }
     }
 
     /**
-     * Structural edges by wrapper identity (shared wrappers can form cycles).
+     * Structural edges by node identity (shared nodes can form cycles).
      */
-    private static IdentityHashMap<BehaviorNodeWrapper<?, ?>, List<BehaviorNodeWrapper<?, ?>>> buildStructuralAdjacency(
-            BehaviorNodeWrapper<NodeResult, FlowExecutionContext> root) {
-        IdentityHashMap<BehaviorNodeWrapper<?, ?>, List<BehaviorNodeWrapper<?, ?>>> adj = new IdentityHashMap<>();
-        ArrayDeque<BehaviorNodeWrapper<NodeResult, FlowExecutionContext>> queue = new ArrayDeque<>();
-        IdentityHashMap<BehaviorNodeWrapper<NodeResult, FlowExecutionContext>, Boolean> expandedFrom = new IdentityHashMap<>();
+    private static IdentityHashMap<INode<?, ?>, List<INode<?, ?>>> buildStructuralAdjacency(
+            INode<NodeResult, FlowExecutionContext> root) {
+        IdentityHashMap<INode<?, ?>, List<INode<?, ?>>> adj = new IdentityHashMap<>();
+        ArrayDeque<INode<NodeResult, FlowExecutionContext>> queue = new ArrayDeque<>();
+        IdentityHashMap<INode<NodeResult, FlowExecutionContext>, Boolean> expandedFrom = new IdentityHashMap<>();
 
         queue.add(root);
         expandedFrom.put(root, Boolean.TRUE);
         while (!queue.isEmpty()) {
-            BehaviorNodeWrapper<NodeResult, FlowExecutionContext> parent = queue.remove();
-            for (BehaviorNodeWrapper<NodeResult, FlowExecutionContext> child : structuralChildren(parent)) {
+            INode<NodeResult, FlowExecutionContext> parent = queue.remove();
+            for (INode<NodeResult, FlowExecutionContext> child : structuralChildren(parent)) {
                 if (child == null) {
                     throw new InvalidFlowDefinitionException("Structural child is null");
                 }
@@ -106,21 +105,20 @@ public final class FlowDefinitionValidator {
         return adj;
     }
 
-    private static List<BehaviorNodeWrapper<NodeResult, FlowExecutionContext>> structuralChildren(
-            BehaviorNodeWrapper<NodeResult, FlowExecutionContext> wrapper) {
-        INode<NodeResult, FlowExecutionContext> node = wrapper.getNode();
+    private static List<INode<NodeResult, FlowExecutionContext>> structuralChildren(
+            INode<NodeResult, FlowExecutionContext> node) {
         if (node instanceof AbstractControlNode) {
-            return ((AbstractControlNode<NodeResult, FlowExecutionContext>) node).getChildWrappers();
+            return ((AbstractControlNode<NodeResult, FlowExecutionContext>) node).getChildNodes();
         }
         if (node instanceof StrategyNodeImpl) {
             StrategyNodeImpl<NodeResult, FlowExecutionContext> sn = (StrategyNodeImpl<NodeResult, FlowExecutionContext>) node;
-            BehaviorNodeWrapper<NodeResult, FlowExecutionContext> condition = sn.getConditionWrapper();
+            INode<NodeResult, FlowExecutionContext> condition = sn.getConditionNode();
             if (condition == null) {
                 throw new InvalidFlowDefinitionException("Strategy node condition is null");
             }
-            List<BehaviorNodeWrapper<NodeResult, FlowExecutionContext>> list = new ArrayList<>();
+            List<INode<NodeResult, FlowExecutionContext>> list = new ArrayList<>();
             list.add(condition);
-            Map<NodeResult, BehaviorNodeWrapper<NodeResult, FlowExecutionContext>> map = sn.getStrategyMap();
+            Map<NodeResult, INode<NodeResult, FlowExecutionContext>> map = sn.getStrategyMap();
             if (map != null) {
                 list.addAll(map.values());
             }
@@ -134,16 +132,16 @@ public final class FlowDefinitionValidator {
     }
 
     private static boolean hasCycle(
-            IdentityHashMap<BehaviorNodeWrapper<?, ?>, List<BehaviorNodeWrapper<?, ?>>> adj,
-            BehaviorNodeWrapper<NodeResult, FlowExecutionContext> root) {
-        IdentityHashMap<BehaviorNodeWrapper<?, ?>, Mark> mark = new IdentityHashMap<>();
+            IdentityHashMap<INode<?, ?>, List<INode<?, ?>>> adj,
+            INode<NodeResult, FlowExecutionContext> root) {
+        IdentityHashMap<INode<?, ?>, Mark> mark = new IdentityHashMap<>();
         return dfsHasCycle(root, adj, mark);
     }
 
     private static boolean dfsHasCycle(
-            BehaviorNodeWrapper<?, ?> node,
-            IdentityHashMap<BehaviorNodeWrapper<?, ?>, List<BehaviorNodeWrapper<?, ?>>> adj,
-            IdentityHashMap<BehaviorNodeWrapper<?, ?>, Mark> mark) {
+            INode<?, ?> node,
+            IdentityHashMap<INode<?, ?>, List<INode<?, ?>>> adj,
+            IdentityHashMap<INode<?, ?>, Mark> mark) {
         Mark m = mark.get(node);
         if (m == Mark.GRAY) {
             return true;
@@ -152,7 +150,7 @@ public final class FlowDefinitionValidator {
             return false;
         }
         mark.put(node, Mark.GRAY);
-        for (BehaviorNodeWrapper<?, ?> next : adj.getOrDefault(node, List.of())) {
+        for (INode<?, ?> next : adj.getOrDefault(node, List.of())) {
             if (dfsHasCycle(next, adj, mark)) {
                 return true;
             }

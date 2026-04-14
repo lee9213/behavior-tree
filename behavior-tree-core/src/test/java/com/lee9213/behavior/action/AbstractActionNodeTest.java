@@ -17,9 +17,9 @@ class AbstractActionNodeTest {
     void retryDisabled_仅执行一次() {
         AtomicInteger attempts = new AtomicInteger();
         RetryPolicy policy = new RetryPolicy(5, 1L, 2.0, 0.0);
-        AbstractActionNode node = new AbstractActionNode(false, policy) {
+        AbstractActionNode<NodeResult, FlowExecutionContext> node = new AbstractActionNode<NodeResult, FlowExecutionContext>("test-node", false, policy) {
             @Override
-            protected NodeResult doExecute(FlowExecutionContext context) {
+            protected NodeResult doExecute(FlowExecutionContext context) throws Exception {
                 attempts.incrementAndGet();
                 throw new IllegalStateException("fail");
             }
@@ -32,9 +32,9 @@ class AbstractActionNodeTest {
     void retryEnabled_失败时按策略多次尝试() {
         AtomicInteger attempts = new AtomicInteger();
         RetryPolicy policy = new RetryPolicy(3, 1L, 2.0, 0.0);
-        AbstractActionNode node = new AbstractActionNode(true, policy) {
+        AbstractActionNode<NodeResult, FlowExecutionContext> node = new AbstractActionNode<NodeResult, FlowExecutionContext>("test-node", true, policy) {
             @Override
-            protected NodeResult doExecute(FlowExecutionContext context) {
+            protected NodeResult doExecute(FlowExecutionContext context) throws Exception {
                 attempts.incrementAndGet();
                 throw new IllegalStateException("fail");
             }

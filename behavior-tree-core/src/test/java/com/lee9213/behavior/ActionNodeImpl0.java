@@ -13,4 +13,18 @@ public class ActionNodeImpl0 implements IActionNode<NodeResult, TestContext> {
     public NodeResult execute(TestContext context) {
         return NodeResult.SUCCESS;
     }
+
+    @Override
+    public String getNodeName() {
+        return "ActionNodeImpl0";
+    }
+
+    @Override
+    public String getStepTag() {
+        return null;
+    }
+
+    @Override
+    public void setStepTag(String stepTag) {
+    }
 }

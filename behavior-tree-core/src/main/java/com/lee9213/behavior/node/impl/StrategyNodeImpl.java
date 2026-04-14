@@ -44,6 +44,9 @@ public final class StrategyNodeImpl<Result extends NodeResult,Context extends Ba
         log.info("节点{}执行结果：{}。", conditionNode.getNodeName(), nodeResult);
         checkNodeResult(nodeResult);
         INode<Result, Context> node = strategyMap.get(nodeResult);
+        if (node == null) {
+            throw new BehaviorNodeExecuteException("策略映射中未找到与结果 " + nodeResult + " 匹配的策略");
+        }
         context.setCurrentNode(node);
         nodeResult = node.execute(context);
         log.info("节点{}执行结果：{}。", node.getNodeName(), nodeResult);

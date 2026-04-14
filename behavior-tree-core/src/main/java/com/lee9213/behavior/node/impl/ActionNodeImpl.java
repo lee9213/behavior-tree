@@ -2,7 +2,7 @@ package com.lee9213.behavior.node.impl;
 
 import com.lee9213.behavior.BaseContext;
 import com.lee9213.behavior.NodeResult;
-import com.lee9213.behavior.RetryPolicy;
+import com.lee9213.behavior.retry.RetryPolicy;
 
 /**
  * 自定义动作节点实现

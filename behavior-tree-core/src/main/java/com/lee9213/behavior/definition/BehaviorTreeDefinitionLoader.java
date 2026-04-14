@@ -8,7 +8,7 @@ import com.lee9213.behavior.definition.codec.XmlDefinitionCodec;
 import com.lee9213.behavior.definition.ir.BehaviorDefinitionNode;
 import com.lee9213.behavior.definition.resolve.ActionNodeResolver;
 import com.lee9213.behavior.definition.resolve.ReflectionActionNodeResolver;
-import com.lee9213.behavior.node.INode;
+import com.lee9213.behavior.tree.node.INode;
 
 import java.io.InputStream;
 import java.nio.charset.Charset;

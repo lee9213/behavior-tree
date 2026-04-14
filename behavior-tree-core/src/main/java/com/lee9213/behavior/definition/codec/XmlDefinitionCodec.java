@@ -7,7 +7,7 @@ import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
 import com.lee9213.behavior.definition.exception.DefinitionSyntaxException;
 import com.lee9213.behavior.definition.ir.BehaviorDefinitionNode;
-import com.lee9213.behavior.enums.NodeType;
+import com.lee9213.behavior.tree.enums.NodeType;
 
 import java.io.IOException;
 import java.io.InputStream;

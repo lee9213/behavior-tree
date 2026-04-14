@@ -1,9 +1,9 @@
-package com.lee9213.behavior.node.impl;
+package com.lee9213.behavior.tree.node.impl;
 
 import com.lee9213.behavior.BaseContext;
 import com.lee9213.behavior.NodeResult;
-import com.lee9213.behavior.node.INode;
-import com.lee9213.behavior.node.IRandomNode;
+import com.lee9213.behavior.tree.node.INode;
+
 import lombok.extern.log4j.Log4j2;
 
 import java.util.List;
@@ -16,7 +16,7 @@ import java.util.Random;
  * @date 2024/5/30 14:52
  */
 @Log4j2
-public final class RandomNodeImpl<Result extends NodeResult,Context extends BaseContext> extends AbstractControlNode<Result, Context> implements IRandomNode<Result, Context> {
+public final class RandomNodeImpl<Result extends NodeResult,Context extends BaseContext> extends AbstractControlNode<Result, Context> {
 
     public RandomNodeImpl(String nodeName, List<INode<Result, Context>> childNodeList) {
         super(nodeName);

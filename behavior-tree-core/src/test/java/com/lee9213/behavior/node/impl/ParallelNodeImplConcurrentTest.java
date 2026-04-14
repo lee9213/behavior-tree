@@ -2,8 +2,8 @@ package com.lee9213.behavior.node.impl;
 
 import com.lee9213.behavior.NodeResult;
 import com.lee9213.behavior.flow.FlowExecutionContext;
-import com.lee9213.behavior.node.INode;
-import com.lee9213.behavior.node.NodeFactory;
+import com.lee9213.behavior.tree.node.INode;
+import com.lee9213.behavior.tree.node.NodeFactory;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;

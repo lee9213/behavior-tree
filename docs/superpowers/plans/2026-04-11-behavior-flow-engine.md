@@ -410,7 +410,7 @@ package com.lee9213.behavior.node.impl;
 import com.lee9213.behavior.BehaviorNodeWrapper;
 import com.lee9213.behavior.NodeResult;
 import com.lee9213.behavior.flow.FlowExecutionContext;
-import com.lee9213.behavior.node.INode;
+import com.lee9213.behavior.tree.node.INode;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -488,7 +488,7 @@ git commit -m "feat(core): concurrent parallel node and FlowExecutionContext"
 ```java
 package com.lee9213.behavior.engine;
 
-import com.lee9213.behavior.BehaviorTree;
+import com.lee9213.behavior.tree.BehaviorTree;
 import com.lee9213.behavior.NodeResult;
 import com.lee9213.behavior.flow.FlowExecutionContext;
 import lombok.Getter;

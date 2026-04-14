@@ -1,7 +1,7 @@
 package com.lee9213.behavior.definition.codec;
 
 import com.lee9213.behavior.definition.ir.BehaviorDefinitionNode;
-import com.lee9213.behavior.enums.NodeType;
+import com.lee9213.behavior.tree.enums.NodeType;
 import org.junit.jupiter.api.Test;
 
 import java.io.InputStream;

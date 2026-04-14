@@ -16,17 +16,17 @@
                 <child>
                     <nodeName>RandomAction1</nodeName>
                     <nodeType>Action</nodeType>
-                    <beanName>com.lee9213.behavior.node.impl.SuccessActionNodeImpl</beanName>
+                    <beanName>com.lee9213.behavior.tree.node.impl.SuccessActionNodeImpl</beanName>
                 </child>
                 <child>
                     <nodeName>RandomAction2</nodeName>
                     <nodeType>Action</nodeType>
-                    <beanName>com.lee9213.behavior.node.impl.SuccessActionNodeImpl</beanName>
+                    <beanName>com.lee9213.behavior.tree.node.impl.SuccessActionNodeImpl</beanName>
                 </child>
                 <child>
                     <nodeName>RandomAction3</nodeName>
                     <nodeType>Action</nodeType>
-                    <beanName>com.lee9213.behavior.node.impl.SuccessActionNodeImpl</beanName>
+                    <beanName>com.lee9213.behavior.tree.node.impl.SuccessActionNodeImpl</beanName>
                 </child>
             </children>
         </child>
@@ -37,12 +37,12 @@
                 <child>
                     <nodeName>SelectorAction1</nodeName>
                     <nodeType>Action</nodeType>
-                    <beanName>com.lee9213.behavior.node.impl.FailureActionNodeImpl</beanName>
+                    <beanName>com.lee9213.behavior.tree.node.impl.FailureActionNodeImpl</beanName>
                 </child>
                 <child>
                     <nodeName>SelectorAction2</nodeName>
                     <nodeType>Action</nodeType>
-                    <beanName>com.lee9213.behavior.node.impl.SuccessActionNodeImpl</beanName>
+                    <beanName>com.lee9213.behavior.tree.node.impl.SuccessActionNodeImpl</beanName>
                 </child>
             </children>
         </child>
@@ -59,12 +59,12 @@
                 <entry key="A">
                     <nodeName>StrategyAction1</nodeName>
                     <nodeType>Action</nodeType>
-                    <beanName>com.lee9213.behavior.node.impl.SuccessActionNodeImpl</beanName>
+                    <beanName>com.lee9213.behavior.tree.node.impl.SuccessActionNodeImpl</beanName>
                 </entry>
                 <entry key="B">
                     <nodeName>StrategyAction2</nodeName>
                     <nodeType>Action</nodeType>
-                    <beanName>com.lee9213.behavior.node.impl.FailureActionNodeImpl</beanName>
+                    <beanName>com.lee9213.behavior.tree.node.impl.FailureActionNodeImpl</beanName>
                 </entry>
             </strategyMap>
         </child>

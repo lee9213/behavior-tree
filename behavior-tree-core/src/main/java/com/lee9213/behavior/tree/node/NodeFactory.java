@@ -1,9 +1,9 @@
-package com.lee9213.behavior.node;
+package com.lee9213.behavior.tree.node;
 
 import com.lee9213.behavior.BaseContext;
 import com.lee9213.behavior.NodeResult;
-import com.lee9213.behavior.retry.RetryPolicy;
-import com.lee9213.behavior.node.impl.*;
+import com.lee9213.behavior.tree.retry.RetryPolicy;
+import com.lee9213.behavior.tree.node.impl.*;
 
 import java.util.List;
 import java.util.Map;
@@ -29,7 +29,7 @@ public class NodeFactory {
      * @param <Context>   上下文类型
      * @return 顺序节点
      */
-    public static <Result extends NodeResult, Context extends BaseContext> ISequenceNode<Result, Context> createSequenceNode(String nodeName, List<INode<Result, Context>> childNodes) {
+    public static <Result extends NodeResult, Context extends BaseContext> IControlNode<Result, Context> createSequenceNode(String nodeName, List<INode<Result, Context>> childNodes) {
         return new SequenceNodeImpl<>(nodeName, childNodes);
     }
 
@@ -42,7 +42,7 @@ public class NodeFactory {
      * @param <Context>   上下文类型
      * @return 选择节点
      */
-    public static <Result extends NodeResult, Context extends BaseContext> ISelectorNode<Result, Context> createSelectorNode(String nodeName, List<INode<Result, Context>> childNodes) {
+    public static <Result extends NodeResult, Context extends BaseContext> IControlNode<Result, Context> createSelectorNode(String nodeName, List<INode<Result, Context>> childNodes) {
         return new SelectorNodeImpl<>(nodeName, childNodes);
     }
 
@@ -55,7 +55,7 @@ public class NodeFactory {
      * @param <Context>   上下文类型
      * @return 并行节点
      */
-    public static <Result extends NodeResult, Context extends BaseContext> IParallelNode<Result, Context> createParallelNode(String nodeName, List<INode<Result, Context>> childNodes) {
+    public static <Result extends NodeResult, Context extends BaseContext> IControlNode<Result, Context> createParallelNode(String nodeName, List<INode<Result, Context>> childNodes) {
         return new ParallelNodeImpl<>(nodeName, childNodes);
     }
 
@@ -69,7 +69,7 @@ public class NodeFactory {
      * @param <Context>   上下文类型
      * @return 并行节点
      */
-    public static <Result extends NodeResult, Context extends BaseContext> IParallelNode<Result, Context> createParallelNode(String nodeName, List<INode<Result, Context>> childNodes, Executor executor) {
+    public static <Result extends NodeResult, Context extends BaseContext> IControlNode<Result, Context> createParallelNode(String nodeName, List<INode<Result, Context>> childNodes, Executor executor) {
         return new ParallelNodeImpl<>(nodeName, childNodes, executor);
     }
 
@@ -82,7 +82,7 @@ public class NodeFactory {
      * @param <Context>   上下文类型
      * @return 随机节点
      */
-    public static <Result extends NodeResult, Context extends BaseContext> IRandomNode<Result, Context> createRandomNode(String nodeName, List<INode<Result, Context>> childNodes) {
+    public static <Result extends NodeResult, Context extends BaseContext> IControlNode<Result, Context> createRandomNode(String nodeName, List<INode<Result, Context>> childNodes) {
         return new RandomNodeImpl<>(nodeName, childNodes);
     }
 
@@ -96,7 +96,7 @@ public class NodeFactory {
      * @param <Context>     上下文类型
      * @return 策略节点
      */
-    public static <Result extends NodeResult, Context extends BaseContext> IDecoratorNode<Result, Context> createStrategyNode(String nodeName, INode<Result, Context> conditionNode, Map<Result, INode<Result, Context>> strategyMap) {
+    public static <Result extends NodeResult, Context extends BaseContext> INode<Result, Context> createStrategyNode(String nodeName, INode<Result, Context> conditionNode, Map<Result, INode<Result, Context>> strategyMap) {
         return new StrategyNodeImpl<>(nodeName, conditionNode, strategyMap);
     }
 
@@ -135,7 +135,7 @@ public class NodeFactory {
      * @param <Context>    上下文类型
      * @return 自定义动作节点
      */
-    public static <Result extends NodeResult, Context extends BaseContext> IActionNode<Result, Context> createActionNode(String nodeName, boolean retryEnabled, RetryPolicy retryPolicy, ActionNodeImpl.ActionFunction<Result, Context> action) {
-        return new ActionNodeImpl<>(nodeName, retryEnabled, retryPolicy, action);
+    public static <Result extends NodeResult, Context extends BaseContext> IActionNode<Result, Context> createActionNode(String nodeName, boolean retryEnabled, RetryPolicy retryPolicy, ActionNodeFunction<Result, Context> action) {
+        return new DefaultActionNodeImpl<>(nodeName, retryEnabled, retryPolicy, action);
     }
 }

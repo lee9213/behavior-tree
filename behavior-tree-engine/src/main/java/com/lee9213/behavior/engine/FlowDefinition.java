@@ -1,6 +1,6 @@
 package com.lee9213.behavior.engine;
 
-import com.lee9213.behavior.BehaviorTree;
+import com.lee9213.behavior.tree.BehaviorTree;
 import com.lee9213.behavior.NodeResult;
 import com.lee9213.behavior.flow.FlowExecutionContext;
 import lombok.Getter;

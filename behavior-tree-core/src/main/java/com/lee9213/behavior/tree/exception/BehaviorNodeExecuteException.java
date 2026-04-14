@@ -1,4 +1,4 @@
-package com.lee9213.behavior.exception;
+package com.lee9213.behavior.tree.exception;
 
 /**
  * 节点执行异常

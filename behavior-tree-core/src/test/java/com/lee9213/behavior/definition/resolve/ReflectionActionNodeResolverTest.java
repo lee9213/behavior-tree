@@ -3,9 +3,9 @@ package com.lee9213.behavior.definition.resolve;
 import com.lee9213.behavior.NodeResult;
 import com.lee9213.behavior.TestContext;
 import com.lee9213.behavior.definition.ir.BehaviorDefinitionNode;
-import com.lee9213.behavior.enums.NodeType;
-import com.lee9213.behavior.node.IActionNode;
-import com.lee9213.behavior.node.impl.SuccessActionNodeImpl;
+import com.lee9213.behavior.tree.enums.NodeType;
+import com.lee9213.behavior.tree.node.IActionNode;
+import com.lee9213.behavior.tree.node.impl.SuccessActionNodeImpl;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;

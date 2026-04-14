@@ -4,7 +4,7 @@ import com.lee9213.behavior.BaseContext;
 import com.lee9213.behavior.NodeResult;
 import com.lee9213.behavior.definition.exception.DefinitionAssemblyException;
 import com.lee9213.behavior.definition.ir.BehaviorDefinitionNode;
-import com.lee9213.behavior.node.IActionNode;
+import com.lee9213.behavior.tree.node.IActionNode;
 
 /**
  * 按 {@code beanName} 全限定类名反射实例化 {@link IActionNode}（无 Spring 容器）。

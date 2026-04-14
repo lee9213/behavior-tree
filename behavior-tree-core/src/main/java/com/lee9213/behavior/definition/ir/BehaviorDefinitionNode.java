@@ -1,6 +1,6 @@
 package com.lee9213.behavior.definition.ir;
 
-import com.lee9213.behavior.enums.NodeType;
+import com.lee9213.behavior.tree.enums.NodeType;
 
 import java.util.List;
 import java.util.Map;

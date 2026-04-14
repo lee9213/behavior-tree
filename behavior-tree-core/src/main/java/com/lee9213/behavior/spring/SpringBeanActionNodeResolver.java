@@ -5,7 +5,7 @@ import com.lee9213.behavior.NodeResult;
 import com.lee9213.behavior.definition.exception.DefinitionAssemblyException;
 import com.lee9213.behavior.definition.ir.BehaviorDefinitionNode;
 import com.lee9213.behavior.definition.resolve.ActionNodeResolver;
-import com.lee9213.behavior.node.IActionNode;
+import com.lee9213.behavior.tree.node.IActionNode;
 
 /**
  * 从 Spring {@link org.springframework.context.ApplicationContext} 按 Bean 名解析 {@link IActionNode}。

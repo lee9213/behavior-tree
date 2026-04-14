@@ -1,6 +1,6 @@
 package com.lee9213.behavior;
 
-import com.lee9213.behavior.node.INode;
+import com.lee9213.behavior.tree.node.INode;
 import lombok.Data;
 
 import java.io.Serializable;

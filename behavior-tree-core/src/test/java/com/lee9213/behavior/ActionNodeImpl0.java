@@ -1,6 +1,6 @@
 package com.lee9213.behavior;
 
-import com.lee9213.behavior.node.IActionNode;
+import com.lee9213.behavior.tree.node.IActionNode;
 import org.springframework.stereotype.Service;
 
 /**

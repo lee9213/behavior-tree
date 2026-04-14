@@ -1,4 +1,4 @@
-package com.lee9213.behavior.retry;
+package com.lee9213.behavior.tree.retry;
 
 public record RetryPolicy(
         int maxAttempts,

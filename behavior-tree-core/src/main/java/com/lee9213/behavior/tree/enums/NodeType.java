@@ -1,4 +1,4 @@
-package com.lee9213.behavior.enums;
+package com.lee9213.behavior.tree.enums;
 
 /**
  * 节点类型

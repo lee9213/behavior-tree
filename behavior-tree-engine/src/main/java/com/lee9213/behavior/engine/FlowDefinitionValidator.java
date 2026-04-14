@@ -1,11 +1,11 @@
 package com.lee9213.behavior.engine;
 
-import com.lee9213.behavior.BehaviorTree;
+import com.lee9213.behavior.tree.BehaviorTree;
 import com.lee9213.behavior.NodeResult;
 import com.lee9213.behavior.flow.FlowExecutionContext;
-import com.lee9213.behavior.node.INode;
-import com.lee9213.behavior.node.impl.AbstractControlNode;
-import com.lee9213.behavior.node.impl.StrategyNodeImpl;
+import com.lee9213.behavior.tree.node.INode;
+import com.lee9213.behavior.tree.node.impl.AbstractControlNode;
+import com.lee9213.behavior.tree.node.impl.StrategyNodeImpl;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;

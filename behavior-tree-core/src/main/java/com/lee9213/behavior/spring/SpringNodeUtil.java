@@ -1,6 +1,6 @@
 package com.lee9213.behavior.spring;
 
-import com.lee9213.behavior.node.IActionNode;
+import com.lee9213.behavior.tree.node.IActionNode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 

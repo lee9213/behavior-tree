@@ -1,10 +1,10 @@
-package com.lee9213.behavior.node.impl;
+package com.lee9213.behavior.tree.node.impl;
 
 import com.lee9213.behavior.BaseContext;
 import com.lee9213.behavior.NodeResult;
-import com.lee9213.behavior.exception.BehaviorNodeExecuteException;
-import com.lee9213.behavior.node.IDecoratorNode;
-import com.lee9213.behavior.node.INode;
+import com.lee9213.behavior.tree.exception.BehaviorNodeExecuteException;
+
+import com.lee9213.behavior.tree.node.INode;
 import lombok.extern.log4j.Log4j2;
 
 import java.util.Map;
@@ -16,7 +16,7 @@ import java.util.Map;
  * @date 2024/6/4 09:44
  */
 @Log4j2
-public final class StrategyNodeImpl<Result extends NodeResult,Context extends BaseContext> implements IDecoratorNode<Result, Context> {
+public final class StrategyNodeImpl<Result extends NodeResult,Context extends BaseContext> implements INode<Result, Context> {
 
     private INode<Result, Context> conditionNode;
     private Map<Result, INode<Result, Context>> strategyMap;

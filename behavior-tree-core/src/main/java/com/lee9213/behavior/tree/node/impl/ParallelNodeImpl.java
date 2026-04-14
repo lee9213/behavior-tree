@@ -1,10 +1,10 @@
-package com.lee9213.behavior.node.impl;
+package com.lee9213.behavior.tree.node.impl;
 
 import com.lee9213.behavior.BaseContext;
 import com.lee9213.behavior.NodeResult;
 import com.lee9213.behavior.flow.FlowExecutionContext;
-import com.lee9213.behavior.node.IParallelNode;
-import com.lee9213.behavior.node.INode;
+
+import com.lee9213.behavior.tree.node.INode;
 import lombok.extern.log4j.Log4j2;
 
 import java.util.ArrayList;
@@ -20,7 +20,7 @@ import java.util.concurrent.Executor;
  * @date 2024/5/30 14:17
  */
 @Log4j2
-public final class ParallelNodeImpl<Result extends NodeResult, Context extends BaseContext> extends AbstractControlNode<Result, Context> implements IParallelNode<Result, Context> {
+public final class ParallelNodeImpl<Result extends NodeResult, Context extends BaseContext> extends AbstractControlNode<Result, Context> {
 
     private final Executor executor;
 

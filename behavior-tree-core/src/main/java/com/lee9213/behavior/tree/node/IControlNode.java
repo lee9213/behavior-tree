@@ -1,4 +1,4 @@
-package com.lee9213.behavior.node;
+package com.lee9213.behavior.tree.node;
 
 import com.lee9213.behavior.BaseContext;
 import com.lee9213.behavior.NodeResult;

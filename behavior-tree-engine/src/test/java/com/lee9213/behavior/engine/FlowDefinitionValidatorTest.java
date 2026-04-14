@@ -1,10 +1,10 @@
 package com.lee9213.behavior.engine;
 
-import com.lee9213.behavior.BehaviorTree;
+import com.lee9213.behavior.tree.BehaviorTree;
 import com.lee9213.behavior.NodeResult;
 import com.lee9213.behavior.flow.FlowExecutionContext;
-import com.lee9213.behavior.node.INode;
-import com.lee9213.behavior.node.impl.SuccessActionNodeImpl;
+import com.lee9213.behavior.tree.node.INode;
+import com.lee9213.behavior.tree.node.impl.SuccessActionNodeImpl;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;

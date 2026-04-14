@@ -108,7 +108,7 @@ public enum DefinitionFormat {
 ```java
 package com.lee9213.behavior.definition.ir;
 
-import com.lee9213.behavior.enums.NodeType;
+import com.lee9213.behavior.tree.enums.NodeType;
 
 import java.util.List;
 import java.util.Map;
@@ -350,7 +350,7 @@ package com.lee9213.behavior.definition.resolve;
 import com.lee9213.behavior.BaseContext;
 import com.lee9213.behavior.NodeResult;
 import com.lee9213.behavior.definition.ir.BehaviorDefinitionNode;
-import com.lee9213.behavior.node.IActionNode;
+import com.lee9213.behavior.tree.node.IActionNode;
 
 public interface ActionNodeResolver {
     <Result extends NodeResult, Context extends BaseContext>
@@ -362,7 +362,7 @@ public interface ActionNodeResolver {
 
 - [ ] **Step 3: `SpringBeanActionNodeResolver`**：仅当 `"spring".equalsIgnoreCase(node.container())` 时委托 `SpringNodeUtil.getBehaviorNode(node.beanName())`；否则抛 `DefinitionAssemblyException`（或文档说明「非 spring 不得走此 Resolver」）。
 
-- [ ] **Step 4: 单元测试 `ReflectionActionNodeResolverTest`**：解析 `com.lee9213.behavior.node.impl.SuccessActionNodeImpl` 全限定名，断言非空。
+- [ ] **Step 4: 单元测试 `ReflectionActionNodeResolverTest`**：解析 `com.lee9213.behavior.tree.node.impl.SuccessActionNodeImpl` 全限定名，断言非空。
 
 - [ ] **Step 5: Commit**
 

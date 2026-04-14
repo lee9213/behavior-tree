@@ -1,6 +1,8 @@
-package com.lee9213.behavior;
+package com.lee9213.behavior.tree;
 
-import com.lee9213.behavior.node.INode;
+import com.lee9213.behavior.BaseContext;
+import com.lee9213.behavior.NodeResult;
+import com.lee9213.behavior.tree.node.INode;
 import lombok.Data;
 
 /**
